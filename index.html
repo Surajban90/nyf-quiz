@@ -575,6 +575,42 @@
       <h2 style="color:var(--gold);font-size:1.5rem;font-weight:800;">⚙ Settings</h2>
     </div>
 
+    <!-- Voice settings (ElevenLabs) -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(46,204,113,.2);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--easy);font-weight:700;">&#127897; Voice Commentary</div>
+      <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">
+        For a natural human voice, enter your free <strong style="color:var(--text)">ElevenLabs API key</strong>.<br>
+        <span style="font-size:.75rem;">Sign up free at <strong style="color:#74b9ff;">elevenlabs.io</strong> &rarr; Profile &rarr; API Key. Free tier = 10,000 chars/month.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:.75rem;color:var(--text-dim);">ElevenLabs API Key:</label>
+        <input type="password" id="elevenLabsKeyInput" placeholder="sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(46,204,113,.3);border-radius:8px;padding:10px 14px;color:var(--text);font-family:monospace;font-size:.82rem;outline:none;width:100%;"
+          onfocus="this.style.borderColor='var(--easy)'" onblur="this.style.borderColor='rgba(46,204,113,.3)'">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:.75rem;color:var(--text-dim);">Voice:</label>
+        <select id="elevenLabsVoiceSelect"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(46,204,113,.3);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;outline:none;cursor:pointer;">
+          <option value="pNInz6obpgDQGcFmaJgB">Adam &mdash; Deep, authoritative male</option>
+          <option value="ErXwobaYiN019PkySvjV">Antoni &mdash; Warm, friendly male</option>
+          <option value="VR6AewLTigWG4xSOukaG">Arnold &mdash; Strong, powerful male</option>
+          <option value="yoZ06aMxZJJ28mfd3POQ">Sam &mdash; Neutral, clear male</option>
+          <option value="onwK4e9ZLuTAKqWW03F9">Daniel &mdash; Calm, professional</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="applyVoiceSettings()"
+          style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.4);color:var(--easy);border-radius:8px;padding:9px 22px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;">&#10003; Save Voice Settings</button>
+        <button onclick="testVoice()"
+          style="background:rgba(52,152,219,.12);border:1px solid rgba(52,152,219,.4);color:#74b9ff;border-radius:8px;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;">&#127897; Test Voice</button>
+        <span id="voiceSavedMsg" style="display:none;color:var(--easy);font-size:.82rem;"></span>
+      </div>
+      <div style="font-size:.72rem;color:var(--text-dim);padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;">
+        No key? Quiz uses browser voice (less natural). Add ElevenLabs key above for best experience.
+      </div>
+    </div>
+
     <!-- Title editor -->
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(245,200,66,.2);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;">
       <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;">✏ Edit Quiz Title</div>
@@ -1339,21 +1375,9 @@ function awardScore(ti){
   saveState();
 
   const msg = `Correct! ${pts} points to ${teams[ti]}.`;
-  if(ttsEnabled && window.speechSynthesis){
-    window.speechSynthesis.cancel();
-    setTimeout(()=>{
-      if(!cachedVoice) loadVoice();
-      const u = new SpeechSynthesisUtterance(msg);
-      u.lang='en-US'; u.rate=0.9; u.pitch=0.85; u.volume=1.0;
-      if(cachedVoice) u.voice=cachedVoice;
-      u.onend = u.onerror = ()=>{
-        setTimeout(()=>{ closeModal(); renderGrid(); renderTurnBox(true); }, 600);
-      };
-      window.speechSynthesis.speak(u);
-    }, 150);
-  } else {
-    setTimeout(()=>{ closeModal(); renderGrid(); renderTurnBox(true); }, 2500);
-  }
+  speakAndWait(msg, ()=>{
+    setTimeout(()=>{ closeModal(); renderGrid(); renderTurnBox(true); }, 600);
+  });
 }
 
 function awardNone(){
@@ -1376,7 +1400,21 @@ function closeModal(){
 }
 
 // ===================== SPEECH (TTS) =====================
+// ===================== SPEECH (TTS) =====================
+// Uses ElevenLabs API for natural human voice.
+// Enter your free API key in Settings → Voice Settings.
+// Falls back to browser TTS if no key is set.
+
 let ttsEnabled = true;
+let elevenLabsKey = '';         // set by user in settings
+let elevenLabsVoiceId = 'pNInz6obpgDQGcFmaJgB'; // "Adam" — deep natural male voice
+// Other good ElevenLabs voice IDs:
+//   pNInz6obpgDQGcFmaJgB = Adam (deep, authoritative)
+//   ErXwobaYiN019PkySvjV = Antoni (warm)
+//   VR6AewLTigWG4xSOukaG = Arnold (strong)
+//   yoZ06aMxZJJ28mfd3POQ = Sam (neutral)
+
+// Browser TTS fallback vars
 let cachedVoice = null;
 let chromeTTSWorkaround = null;
 
@@ -1384,7 +1422,6 @@ function loadVoice(){
   if(!window.speechSynthesis) return;
   const voices = window.speechSynthesis.getVoices();
   if(!voices.length) return;
-  // Try to find a deep/male English voice
   const priorities = [
     v => /google uk english male/i.test(v.name),
     v => /microsoft david/i.test(v.name),
@@ -1399,51 +1436,84 @@ function loadVoice(){
     const match = voices.find(test);
     if(match){ cachedVoice = match; return; }
   }
-  // Fallback: just first English voice
   cachedVoice = voices.find(v=>v.lang.startsWith('en')) || voices[0];
 }
-
-// Load voices now and whenever they change
 if(window.speechSynthesis){
   window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = loadVoice;
   setTimeout(loadVoice, 500);
 }
 
-function speak(text, rate=0.9, pitch=0.85){
-  if(!ttsEnabled) return;
-  if(!window.speechSynthesis) return;
+// ── ElevenLabs TTS ──
+async function speakElevenLabs(text, stability=0.5, similarityBoost=0.75, style=0.0, onDone){
+  if(!ttsEnabled || !elevenLabsKey){ speakBrowser(text, 0.9, 0.85, onDone); return; }
   try{
-    window.speechSynthesis.cancel();
-    setTimeout(()=>{
-      try{
-        // Re-load voice each time in case it wasn't ready before
-        if(!cachedVoice) loadVoice();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang   = 'en-US';
-        u.rate   = rate;
-        u.pitch  = pitch;
-        u.volume = 1.0;
-        if(cachedVoice) u.voice = cachedVoice;
-        // Chrome workaround: keep synthesis alive
-        u.onstart = () => {
-          if(chromeTTSWorkaround) clearInterval(chromeTTSWorkaround);
-          chromeTTSWorkaround = setInterval(()=>{
-            if(window.speechSynthesis.speaking){
-              window.speechSynthesis.pause();
-              window.speechSynthesis.resume();
-            } else {
-              clearInterval(chromeTTSWorkaround);
-            }
-          }, 5000);
-        };
-        u.onend = u.onerror = () => {
-          if(chromeTTSWorkaround){ clearInterval(chromeTTSWorkaround); chromeTTSWorkaround=null; }
-        };
-        window.speechSynthesis.speak(u);
-      } catch(e){ console.warn('TTS error:', e); }
-    }, 150);
-  } catch(e){}
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': elevenLabsKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_turbo_v2',
+        voice_settings: { stability, similarity_boost: similarityBoost, style, use_speaker_boost: true }
+      })
+    });
+    if(!res.ok){ console.warn('ElevenLabs error:', res.status); speakBrowser(text, 0.9, 0.85, onDone); return; }
+    const blob  = await res.blob();
+    const url   = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.onended = () => { URL.revokeObjectURL(url); if(onDone) onDone(); };
+    audio.onerror = () => { URL.revokeObjectURL(url); if(onDone) onDone(); };
+    audio.play();
+  } catch(e){ console.warn('ElevenLabs fetch failed:', e); speakBrowser(text, 0.9, 0.85, onDone); }
+}
+
+// ── Browser TTS fallback ──
+function speakBrowser(text, rate, pitch, onDone){
+  if(!window.speechSynthesis){ if(onDone) setTimeout(onDone, 1200); return; }
+  window.speechSynthesis.cancel();
+  setTimeout(()=>{
+    if(!cachedVoice) loadVoice();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='en-US'; u.rate=rate; u.pitch=pitch; u.volume=1.0;
+    if(cachedVoice) u.voice=cachedVoice;
+    u.onstart = ()=>{
+      if(chromeTTSWorkaround) clearInterval(chromeTTSWorkaround);
+      chromeTTSWorkaround = setInterval(()=>{
+        if(window.speechSynthesis.speaking){ window.speechSynthesis.pause(); window.speechSynthesis.resume(); }
+        else { clearInterval(chromeTTSWorkaround); }
+      }, 5000);
+    };
+    u.onend = u.onerror = ()=>{
+      if(chromeTTSWorkaround){ clearInterval(chromeTTSWorkaround); chromeTTSWorkaround=null; }
+      if(onDone) setTimeout(onDone, 100);
+    };
+    window.speechSynthesis.speak(u);
+  }, 150);
+}
+
+// ── Main speak entry points ──
+// Normal commentary (pass, question number, wrong, etc.)
+function speak(text){
+  if(!ttsEnabled) return;
+  speakElevenLabs(text, 0.5, 0.75, 0.0, null);
+}
+
+// ── toggleSound ──
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  ttsEnabled   = soundEnabled;
+  const btn = document.getElementById('soundToggle');
+  btn.textContent = soundEnabled ? '🔊' : '🔇';
+  btn.title = soundEnabled ? 'Sound On' : 'Sound Off';
+  if(!soundEnabled){
+    stopClockTicking();
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    if(chromeTTSWorkaround) clearInterval(chromeTTSWorkaround);
+  }
 }
 
 // ===================== SOUND ENGINE =====================
@@ -1656,21 +1726,9 @@ function markCorrect(){
   currentTurnIdx = getNextTurnIdx(currentTurnIdx, rnd);
 
   const msg = `Correct! ${pts} points to ${teams[ti]}.`;
-  if(ttsEnabled && window.speechSynthesis){
-    window.speechSynthesis.cancel();
-    setTimeout(()=>{
-      if(!cachedVoice) loadVoice();
-      const u = new SpeechSynthesisUtterance(msg);
-      u.lang = 'en-US'; u.rate = 0.9; u.pitch = 0.85; u.volume = 1.0;
-      if(cachedVoice) u.voice = cachedVoice;
-      u.onend = u.onerror = () => {
-        setTimeout(()=>{ closeModal(); renderGrid(); renderTurnBox(true); }, 600);
-      };
-      window.speechSynthesis.speak(u);
-    }, 150);
-  } else {
-    setTimeout(()=>{ closeModal(); renderGrid(); renderTurnBox(true); }, 2500);
-  }
+  speakAndWait(msg, ()=>{
+    setTimeout(()=>{ closeModal(); renderGrid(); renderTurnBox(true); }, 600);
+  });
 }
 
 function markWrong(){
@@ -1914,37 +1972,19 @@ function appendRevealRow(team, rank, isWinner){
 }
 
 // ── SPEAK HELPERS ──
+// speakAndWait — normal pace, calls callback when done
 function speakAndWait(text, callback){
-  if(!ttsEnabled || !window.speechSynthesis){
-    if(callback) setTimeout(callback, 1500);
-    return;
-  }
-  window.speechSynthesis.cancel();
-  setTimeout(()=>{
-    if(!cachedVoice) loadVoice();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang='en-US'; u.rate=0.88; u.pitch=0.85; u.volume=1.0;
-    if(cachedVoice) u.voice=cachedVoice;
-    u.onend = u.onerror = ()=>{ if(callback) setTimeout(callback, 100); };
-    window.speechSynthesis.speak(u);
-  }, 200);
+  if(!ttsEnabled){ if(callback) setTimeout(callback, 1500); return; }
+  speakElevenLabs(text, 0.5, 0.75, 0.0, callback);
 }
 
+// speakExcited — higher energy for winner announcement
 function speakExcited(text, callback){
-  if(!ttsEnabled || !window.speechSynthesis){
-    if(callback) setTimeout(callback, 3000);
-    return;
-  }
-  window.speechSynthesis.cancel();
-  setTimeout(()=>{
-    if(!cachedVoice) loadVoice();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang='en-US'; u.rate=1.08; u.pitch=1.25; u.volume=1.0;
-    if(cachedVoice) u.voice=cachedVoice;
-    u.onend = u.onerror = ()=>{ if(callback) setTimeout(callback, 100); };
-    window.speechSynthesis.speak(u);
-  }, 200);
+  if(!ttsEnabled){ if(callback) setTimeout(callback, 3000); return; }
+  // ElevenLabs style=0.6 gives more expressive/excited delivery
+  speakElevenLabs(text, 0.3, 0.85, 0.6, callback);
 }
+
 
 // Crowd celebration — all gains reduced by ~50% so commentary stays audible
 function playCrowdCelebration(){
@@ -2024,6 +2064,7 @@ function openSettingsFromHome(){
   settingsCalledFromQuiz = false;
   const currentTitle = document.getElementById('homeTitleEl').textContent;
   document.getElementById('titleInput').value = currentTitle;
+  syncVoiceSettingsUI();
   initTeamSettingsUI();
   showScreen('settingsScreen');
   resetSettingsUI();
@@ -2033,10 +2074,48 @@ function openSettingsFromQuiz(){
   settingsCalledFromQuiz = true;
   const currentTitle = document.getElementById('homeTitleEl').textContent;
   document.getElementById('titleInput').value = currentTitle;
+  syncVoiceSettingsUI();
   initTeamSettingsUI();
   showScreen('settingsScreen');
   resetSettingsUI();
 }
+
+function syncVoiceSettingsUI(){
+  const keyInp = document.getElementById('elevenLabsKeyInput');
+  const voiceSel = document.getElementById('elevenLabsVoiceSelect');
+  if(keyInp) keyInp.value = elevenLabsKey || '';
+  if(voiceSel) voiceSel.value = elevenLabsVoiceId;
+}
+
+function applyVoiceSettings(){
+  const key   = document.getElementById('elevenLabsKeyInput').value.trim();
+  const voice = document.getElementById('elevenLabsVoiceSelect').value;
+  elevenLabsKey     = key;
+  elevenLabsVoiceId = voice;
+  // Persist in localStorage
+  try{
+    localStorage.setItem('nyfElevenLabsKey', key);
+    localStorage.setItem('nyfElevenLabsVoice', voice);
+  } catch(e){}
+  const msg = document.getElementById('voiceSavedMsg');
+  msg.style.display = 'inline';
+  msg.textContent = key ? '✅ ElevenLabs key saved — human voice active!' : '✅ Saved — using browser voice';
+  setTimeout(()=> msg.style.display='none', 3000);
+}
+
+function testVoice(){
+  speak("Hello! I am the quiz host for N Y F March Quiz. Let's begin!");
+}
+
+// Load saved voice settings on startup
+(function loadSavedVoiceSettings(){
+  try{
+    const k = localStorage.getItem('nyfElevenLabsKey');
+    const v = localStorage.getItem('nyfElevenLabsVoice');
+    if(k) elevenLabsKey = k;
+    if(v) elevenLabsVoiceId = v;
+  } catch(e){}
+})();
 
 function applyTitle(){
   const val = document.getElementById('titleInput').value.trim();
