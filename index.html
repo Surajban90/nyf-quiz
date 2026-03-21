@@ -407,7 +407,8 @@
     .btn-action { text-align: center; }
   }
 
-  /* Settings screen */
+  .creator-tag{font-size:.62rem;color:var(--text-dim);letter-spacing:.06em;white-space:nowrap;opacity:.7;}
+  .creator-tag span{color:var(--gold);font-weight:600;}
   .btn-settings-home{
     background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
     color:var(--text-dim);border-radius:10px;padding:9px 22px;
@@ -495,6 +496,7 @@
     Wrong / None: <span style="color:var(--hard)">0 pts</span><br>
     First team timer: <strong>20 sec</strong> &nbsp;|&nbsp; After each pass: <strong>10 sec</strong> ✦
   </div>
+  <div style="font-size:.65rem;color:var(--text-dim);letter-spacing:.08em;opacity:.6;text-align:center;">✝ Quiz created by <span style="color:var(--gold);font-weight:600;">Suraj Ban</span></div>
 </div>
 
 <!-- QUIZ -->
@@ -512,6 +514,7 @@
       <button class="btn-hdr" onclick="openSettingsFromQuiz()" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:var(--text-dim);">⚙</button>
       <button class="btn-hdr" id="soundToggle" onclick="toggleSound()" title="Sound On" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:var(--text);font-size:1rem;padding:5px 10px;">🔊</button>
       <button class="btn-hdr" onclick="speak('Testing voice. Can you hear me?')" title="Test Voice" style="background:rgba(52,152,219,.12);border-color:rgba(52,152,219,.4);color:#74b9ff;font-size:.75rem;">🎙 Test</button>
+      <div class="creator-tag">✝ Made by <span>Suraj Ban</span></div>
     </div>
   </div>
   <div class="score-strip" id="scoreStrip"></div>
