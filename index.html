@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NYF March Quiz</title>
+<title id="pageTitle">NYF March Quiz</title>
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Noto+Sans+Devanagari:wght@400;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -235,7 +235,53 @@
   .end-reveal-row .er-pts{font-size:1.5rem;font-weight:800;color:var(--gold);}
   .end-reveal-row .er-badge{font-size:.65rem;color:var(--text-dim);}
 
-  /* Tiebreaker overlay */
+  /* Position reveal buttons (end quiz) */
+  .pos-btn{
+    padding:10px 18px; border-radius:10px; border:2px solid;
+    font-family:'Outfit',sans-serif; font-size:.82rem; font-weight:700;
+    cursor:pointer; transition:all .22s; min-width:110px; text-align:center;
+    line-height:1.4;
+  }
+  .pos-btn:hover:not(:disabled){ transform:scale(1.05); }
+  .pos-btn:disabled{ opacity:.35; cursor:default; transform:none; }
+  .pos-btn.winner-btn{
+    background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+    border-color:var(--gold); color:var(--deep);
+    font-size:.9rem; padding:12px 24px;
+    box-shadow:0 4px 18px rgba(245,200,66,.4);
+    animation:pulseGold 2s ease-in-out infinite;
+  }
+  .pos-btn.winner-btn:disabled{ animation:none; }
+  @keyframes pulseGold{
+    0%,100%{ box-shadow:0 4px 18px rgba(245,200,66,.4); }
+    50%{ box-shadow:0 6px 28px rgba(245,200,66,.7); }
+  }
+  .pos-btn.second-btn{
+    border-color:#C0C0C0; color:#C0C0C0; background:rgba(192,192,192,.08);
+  }
+  .pos-btn.second-btn:hover:not(:disabled){ background:rgba(192,192,192,.2); }
+  .pos-btn.other-btn{
+    border-color:rgba(255,255,255,.2); color:var(--text-dim); background:rgba(255,255,255,.04);
+  }
+  .pos-btn.other-btn:hover:not(:disabled){ background:rgba(255,255,255,.1); color:var(--text); }
+  /* Tiebreaker reveal rows inside end-quiz list */
+  .tb-reveal-row{
+    background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.3);
+    border-radius:13px;padding:14px 18px;display:flex;align-items:center;
+    gap:12px;opacity:0;transform:translateY(20px);transition:all .5s ease;flex-wrap:wrap;
+  }
+  .tb-reveal-row.visible{opacity:1;transform:translateY(0);}
+  .tb-reveal-row .tr-badge{font-size:.7rem;color:var(--medium);font-weight:700;letter-spacing:.08em;white-space:nowrap;}
+  .btn-click-winner{
+    padding:8px 14px;border-radius:8px;border:2px solid var(--gold);
+    background:rgba(245,200,66,.15);color:var(--gold);
+    font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:700;
+    cursor:pointer;white-space:nowrap;transition:all .2s;
+    animation:pulseGold 1.5s ease-in-out infinite;
+  }
+  .btn-click-winner:hover:not(:disabled){background:var(--gold);color:var(--deep);}
+  .btn-click-winner:disabled{opacity:.35;cursor:default;animation:none;}
+
   .tiebreak-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);z-index:400;display:none;align-items:center;justify-content:center;padding:20px;}
   .tiebreak-overlay.open{display:flex;}
   .tiebreak-box{background:linear-gradient(145deg,var(--deep2),var(--deep3));border:1px solid rgba(245,200,66,.4);border-radius:20px;padding:36px 32px;max-width:500px;width:100%;text-align:center;display:flex;flex-direction:column;gap:20px;animation:modalIn .3s cubic-bezier(.34,1.56,.64,1);}
@@ -249,13 +295,170 @@
   .tiebreak-waiting{color:var(--gold);font-size:.9rem;font-style:italic;display:none;}
   .tiebreak-waiting.show{display:block;}
 
-  @media(max-width:540px){
-    .teams-grid{grid-template-columns:repeat(2,1fr);}
-    .award-grid{grid-template-columns:repeat(2,1fr);}
-    .award-btn.none-btn{grid-column:span 2;}
-    .question-grid{grid-template-columns:repeat(auto-fill,minmax(54px,1fr));}
-    .modal-box{padding:16px 13px 14px;}
+  /* ===== FULLY RESPONSIVE ===== */
+
+  /* Base: works on all sizes — fluid fonts, flexible layouts */
+  html { font-size: 16px; }
+
+  /* Tablet (≤900px) */
+  @media(max-width:900px){
+    .grid-area { grid-template-columns: 1fr; }
+    .verse-panel, .turn-box { position: static; }
+    .score-table { font-size: .72rem; }
+    .score-table th, .score-table td { padding: 7px 8px; }
   }
+
+  /* Large phone / small tablet (≤680px) */
+  @media(max-width:680px){
+    .quiz-header { padding: 8px 12px; gap: 8px; }
+    .quiz-logo { font-size: .85rem; }
+    .round-tabs { gap: 4px; }
+    .round-tab { padding: 4px 10px; font-size: .7rem; }
+    .header-btns { gap: 4px; }
+    .btn-hdr { padding: 5px 8px; font-size: .7rem; }
+    .grid-area { padding: 12px; gap: 12px; }
+    .turn-box { padding: 12px 14px; }
+    .turn-box .tb-label { font-size: .58rem; }
+    .turn-box .tb-team { font-size: .9rem; padding: 8px 10px; }
+    .verse-panel { padding: 14px 12px; }
+    .verse-panel .vp-text { font-size: .82rem; }
+    .teams-grid { grid-template-columns: repeat(2,1fr); }
+    .reveal-cards { gap: 10px; }
+    .reveal-card { min-width: 100px; padding: 14px 12px; }
+  }
+
+  /* Phone (≤540px) */
+  @media(max-width:540px){
+    html { font-size: 14px; }
+    .home-title { font-size: clamp(1.4rem,7vw,2rem) !important; }
+    .home-sub { font-size: .8rem; }
+    #homeScreen { padding: 28px 14px; gap: 18px; }
+    .team-card { padding: 18px 16px; }
+    .teams-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .btn-start { padding: 12px 32px; font-size: .9rem; }
+
+    /* Quiz header — stack on very small screens */
+    .quiz-header { flex-wrap: wrap; padding: 8px 10px; gap: 6px; }
+    .round-tabs { order: 2; width: 100%; justify-content: center; }
+    .quiz-logo { font-size: .8rem; }
+    .header-btns { gap: 4px; }
+    .btn-hdr { padding: 4px 8px; font-size: .65rem; }
+
+    /* Score strip */
+    .score-chip { min-width: 66px; padding: 5px 8px; }
+    .score-chip .sname { font-size: .58rem; max-width: 58px; }
+    .score-chip .sval { font-size: 1rem; }
+
+    /* Question grid — smaller tiles on phones */
+    .question-grid { grid-template-columns: repeat(auto-fill,minmax(52px,1fr)); gap: 6px; }
+    .q-btn { font-size: .82rem; border-radius: 8px; }
+
+    /* Turn box */
+    .turn-box .tb-nav button { font-size: .68rem; padding: 6px 4px; }
+    .tb-order-item { font-size: .68rem; }
+
+    /* Modal */
+    .modal-overlay { padding: 10px; }
+    .modal-box { padding: 14px 12px 12px; border-radius: 14px; max-height: 98vh; }
+    .modal-top { margin-bottom: 12px; }
+    .modal-meta .qnum-val { font-size: 1.2rem; }
+    .timer-ring { width: 56px; height: 56px; }
+    .timer-ring .timer-num { font-size: 1.15rem; }
+    .timer-label { font-size: .55rem; }
+    .q-box { font-size: clamp(.9rem,3.5vw,1.2rem); padding: 14px 12px; min-height: 60px; }
+    .answering-pill { font-size: .72rem; padding: 5px 10px; }
+    .modal-actions { gap: 6px; }
+    .btn-action { padding: 8px 12px; font-size: .78rem; }
+    .award-grid { grid-template-columns: repeat(2,1fr); gap: 5px; }
+    .award-btn { padding: 7px 4px; font-size: .7rem; }
+    .award-btn.none-btn { grid-column: span 2; }
+
+    /* Scoreboard */
+    #scoresScreen { padding: 22px 12px; gap: 14px; }
+    .scores-title { font-size: 1.2rem; }
+    .reveal-cards { gap: 8px; }
+    .reveal-card { min-width: 85px; max-width: 160px; padding: 12px 10px; }
+    .reveal-card .rc-name { font-size: .75rem; }
+    .reveal-card .rc-score { font-size: 1.6rem; }
+    .btn-reveal-score { font-size: .7rem; padding: 5px 8px; }
+    .end-reveal-list { gap: 8px; }
+    .end-reveal-row { padding: 11px 12px; gap: 10px; }
+    .end-reveal-row .er-pts { font-size: 1.2rem; }
+
+    /* Settings */
+    #settingsScreen > div { padding: 20px 14px; gap: 16px; }
+    .settings-round-btn { padding: 7px 14px; font-size: .75rem; }
+
+    /* Tiebreaker */
+    .tiebreak-box { padding: 24px 18px; gap: 14px; }
+    .tiebreak-team-btn { padding: 10px 16px; font-size: .88rem; min-width: 120px; }
+
+    /* Confirm overlay */
+    .confirm-box { padding: 24px 18px; }
+  }
+
+  /* Very small phones (≤380px) */
+  @media(max-width:380px){
+    .round-tab { padding: 3px 8px; font-size: .65rem; }
+    .question-grid { grid-template-columns: repeat(auto-fill,minmax(46px,1fr)); gap: 5px; }
+    .q-btn { font-size: .75rem; }
+    .award-grid { grid-template-columns: repeat(2,1fr); }
+    .modal-actions { flex-direction: column; align-items: stretch; }
+    .btn-action { text-align: center; }
+  }
+
+  /* Settings screen */
+  .btn-settings-home{
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
+    color:var(--text-dim);border-radius:10px;padding:9px 22px;
+    font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;
+    cursor:pointer;transition:all .2s;
+  }
+  .btn-settings-home:hover{background:rgba(255,255,255,.1);color:var(--text);}
+
+  .settings-round-btn{
+    padding:9px 20px;border-radius:20px;border:1.5px solid;
+    font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;
+    cursor:pointer;transition:all .2s;
+  }
+  .settings-round-btn.easy{border-color:var(--easy);color:var(--easy);background:transparent;}
+  .settings-round-btn.easy.active,.settings-round-btn.easy:hover{background:var(--easy);color:#fff;}
+  .settings-round-btn.medium{border-color:var(--medium);color:var(--medium);background:transparent;}
+  .settings-round-btn.medium.active,.settings-round-btn.medium:hover{background:var(--medium);color:#fff;}
+  .settings-round-btn.hard{border-color:var(--hard);color:var(--hard);background:transparent;}
+  .settings-round-btn.hard.active,.settings-round-btn.hard:hover{background:var(--hard);color:#fff;}
+
+  .btn-parse{
+    background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.4);
+    color:#74b9ff;border-radius:10px;padding:10px 22px;
+    font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;
+    cursor:pointer;transition:all .2s;align-self:flex-start;
+  }
+  .btn-parse:hover{background:rgba(52,152,219,.3);}
+
+  .btn-apply{
+    background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.4);
+    color:var(--easy);border-radius:10px;padding:10px 22px;
+    font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;
+    cursor:pointer;transition:all .2s;
+  }
+  .btn-apply:hover{background:var(--easy);color:#fff;}
+
+  .btn-cancel-preview{
+    background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);
+    color:var(--hard);border-radius:10px;padding:10px 20px;
+    font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;
+    cursor:pointer;transition:all .2s;
+  }
+  .btn-cancel-preview:hover{background:var(--hard);color:#fff;}
+
+  .preview-q-item{
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+    border-radius:8px;padding:10px 14px;
+  }
+  .preview-q-num{font-size:.68rem;color:var(--text-dim);letter-spacing:.06em;margin-bottom:4px;}
+  .preview-q-text{font-family:'Tiro Devanagari Hindi',serif;font-size:.92rem;color:var(--text);margin-bottom:4px;}
+  .preview-a-text{font-size:.8rem;color:var(--easy);}
 </style>
 </head>
 <body>
@@ -265,15 +468,27 @@
 <div id="homeScreen" class="screen active">
   <div class="cross-icon">✝</div>
   <div>
-    <h1 class="home-title">NYF March Quiz</h1>
-    <p class="home-sub">Book of Acts &nbsp;•&nbsp; NNRV Nepali Bible &nbsp;•&nbsp; 6 Teams &nbsp;•&nbsp; 78 Questions</p>
+    <h1 class="home-title" id="homeTitleEl">NYF March Quiz</h1>
+    <p class="home-sub" id="homeSubEl">Book of Acts &nbsp;•&nbsp; NNRV Nepali Bible &nbsp;•&nbsp; 6 Teams &nbsp;•&nbsp; 78 Questions</p>
   </div>
   <div class="divider"></div>
   <div class="team-card">
     <h3>✦ Enter Team Names ✦</h3>
     <div class="teams-grid" id="teamInputs"></div>
   </div>
-  <button class="btn-start" onclick="startQuiz()">Start Quiz →</button>
+  <button class="btn-start" onclick="startQuiz()">Start New Quiz →</button>
+
+  <!-- Resume button — only shown if saved state exists -->
+  <div id="resumeBtn" style="display:none;flex-direction:column;align-items:center;gap:8px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3);border-radius:12px;padding:16px 24px;width:100%;max-width:400px;">
+    <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--easy);font-weight:700;">⏸ Quiz In Progress</div>
+    <div id="resumeInfo" style="font-size:.8rem;color:var(--text-dim);"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="resumeQuiz()" style="background:var(--easy);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;">▶ Resume Quiz</button>
+      <button onclick="discardSave()" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:var(--hard);border-radius:8px;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;">✕ Discard</button>
+    </div>
+  </div>
+
+  <button class="btn-settings-home" onclick="openSettingsFromHome()">⚙ Settings</button>
   <div class="rules-note">
     ✦ Correct answer: <span style="color:var(--easy)">+10 pts</span> &nbsp;|&nbsp;
     Correct after pass: <span style="color:var(--medium)">+5 pts</span> &nbsp;|&nbsp;
@@ -285,7 +500,7 @@
 <!-- QUIZ -->
 <div id="quizScreen" class="screen">
   <div class="quiz-header">
-    <div class="quiz-logo">✝ NYF March Quiz</div>
+    <div class="quiz-logo" id="quizLogoEl">✝ NYF March Quiz</div>
     <div class="round-tabs">
       <button class="round-tab easy active" onclick="switchRound(0)">Easy (1–30)</button>
       <button class="round-tab medium"      onclick="switchRound(1)">Medium (31–60)</button>
@@ -294,6 +509,7 @@
     <div class="header-btns">
       <button class="btn-hdr btn-scoreboard" onclick="showScores(false)">📊 Scoreboard</button>
       <button class="btn-hdr btn-endquiz"    onclick="confirmEnd()">⏹ End Quiz</button>
+      <button class="btn-hdr" onclick="openSettingsFromQuiz()" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:var(--text-dim);">⚙</button>
       <button class="btn-hdr" id="soundToggle" onclick="toggleSound()" title="Sound On" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:var(--text);font-size:1rem;padding:5px 10px;">🔊</button>
       <button class="btn-hdr" onclick="speak('Testing voice. Can you hear me?')" title="Test Voice" style="background:rgba(52,152,219,.12);border-color:rgba(52,152,219,.4);color:#74b9ff;font-size:.75rem;">🎙 Test</button>
     </div>
@@ -328,13 +544,154 @@
 <!-- SCOREBOARD -->
 <div id="scoresScreen" class="screen">
   <div class="cross-icon" style="font-size:2rem">✝</div>
-  <h2 class="scores-title">NYF March Quiz — Scoreboard</h2>
+  <h2 class="scores-title" id="scoresTitleEl">NYF March Quiz — Scoreboard</h2>
   <p class="scores-sub" id="scoresSub"></p>
+
   <!-- Mid-quiz: suspense reveal cards -->
   <div class="reveal-cards" id="revealCards"></div>
-  <!-- End-quiz: dramatic 1-by-1 reveal list -->
-  <div class="end-reveal-list" id="endRevealList" style="display:none"></div>
+
+  <!-- End-quiz: host-controlled position reveal -->
+  <div id="endQuizPanel" style="display:none;flex-direction:column;align-items:center;gap:20px;width:100%;max-width:700px;">
+    <!-- Position buttons — host clicks to reveal each position -->
+    <div style="width:100%;">
+      <div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-weight:700;text-align:center;margin-bottom:12px;">Host — Click to Reveal Each Position</div>
+      <div id="positionBtns" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
+    </div>
+    <!-- Revealed rows appear here -->
+    <div class="end-reveal-list" id="endRevealList"></div>
+  </div>
+
   <button class="btn-back" id="backBtn" onclick="backToQuiz()" style="margin-top:10px">← Back to Quiz</button>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div id="settingsScreen" class="screen">
+  <div style="width:100%;max-width:720px;margin:0 auto;padding:36px 20px;display:flex;flex-direction:column;gap:24px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <button class="btn-back" id="settingsBackBtn" onclick="settingsGoBack()">← Back</button>
+      <h2 style="color:var(--gold);font-size:1.5rem;font-weight:800;">⚙ Settings</h2>
+    </div>
+
+    <!-- Title editor -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(245,200,66,.2);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;">✏ Edit Quiz Title</div>
+      <div style="font-size:.82rem;color:var(--text-dim);">Change the quiz title shown on the home screen, header, and scoreboard.</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:.75rem;color:var(--text-dim);">Quiz Title:</label>
+        <input type="text" id="titleInput" value="NYF March Quiz"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(245,200,66,.3);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;outline:none;transition:border-color .2s;width:100%;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(245,200,66,.3)'">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="applyTitle()" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:var(--deep);border:none;border-radius:8px;padding:9px 22px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;">✓ Apply Title</button>
+        <span id="titleAppliedMsg" style="display:none;color:var(--easy);font-size:.82rem;">✅ Title updated!</span>
+      </div>
+    </div>
+
+    <!-- Teams setting -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(52,152,219,.2);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:16px;">
+      <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#74b9ff;font-weight:700;">👥 Number of Teams</div>
+      <div style="font-size:.82rem;color:var(--text-dim);">Set how many teams will play. Minimum 3, maximum 10. Default is 6.<br>
+        <span style="color:var(--medium);font-size:.75rem;">⚠ Changing teams will reset the home screen inputs. Do this before starting the quiz.</span>
+      </div>
+
+      <!-- Counter control -->
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <button onclick="changeTeamCount(-1)"
+          style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(52,152,219,.5);background:rgba(52,152,219,.1);color:#74b9ff;font-size:1.4rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1;"
+          onmouseover="this.style.background='rgba(52,152,219,.25)'" onmouseout="this.style.background='rgba(52,152,219,.1)'">−</button>
+        <div style="text-align:center;min-width:60px;">
+          <div id="teamCountDisplay" style="font-size:2.2rem;font-weight:800;color:#74b9ff;line-height:1;">6</div>
+          <div style="font-size:.68rem;color:var(--text-dim);letter-spacing:.08em;">TEAMS</div>
+        </div>
+        <button onclick="changeTeamCount(+1)"
+          style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(52,152,219,.5);background:rgba(52,152,219,.1);color:#74b9ff;font-size:1.4rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1;"
+          onmouseover="this.style.background='rgba(52,152,219,.25)'" onmouseout="this.style.background='rgba(52,152,219,.1)'">+</button>
+        <div style="flex:1;min-width:120px;">
+          <div id="teamCountBar" style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;"></div>
+        </div>
+      </div>
+
+      <!-- Team name editor -->
+      <div style="font-size:.75rem;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;margin-top:4px;">Edit Team Names:</div>
+      <div id="teamNameEditorGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;"></div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="applyTeamSettings()"
+          style="background:rgba(52,152,219,.2);border:1px solid rgba(52,152,219,.5);color:#74b9ff;border-radius:8px;padding:9px 22px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;"
+          onmouseover="this.style.background='rgba(52,152,219,.35)'" onmouseout="this.style.background='rgba(52,152,219,.2)'">✓ Apply Team Settings</button>
+        <span id="teamsAppliedMsg" style="display:none;color:var(--easy);font-size:.82rem;">✅ Teams updated!</span>
+      </div>
+    </div>
+
+    <!-- Round selector -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:16px;">
+      <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-weight:700;">1. Select Round to Update</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="settings-round-btn easy" id="sBtn0" onclick="selectSettingsRound(0)">Easy (Q1–30)</button>
+        <button class="settings-round-btn medium" id="sBtn1" onclick="selectSettingsRound(1)">Medium (Q31–60)</button>
+        <button class="settings-round-btn hard" id="sBtn2" onclick="selectSettingsRound(2)">Hard (Q61–78)</button>
+      </div>
+      <div id="settingsRoundInfo" style="font-size:.82rem;color:var(--text-dim);"></div>
+    </div>
+
+    <!-- Upload section -->
+    <div id="settingsUploadSection" style="display:none;background:rgba(255,255,255,.03);border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:22px 20px;display:none;flex-direction:column;gap:16px;">
+      <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-weight:700;">2. Upload or Paste Questions</div>
+
+      <!-- Format guide -->
+      <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.25);border-radius:10px;padding:14px 16px;font-size:.8rem;line-height:1.8;color:var(--text);">
+        <div style="color:#74b9ff;font-weight:700;margin-bottom:6px;">📋 Required Format (each question on 2 lines):</div>
+        <code style="font-family:monospace;color:#a8e6cf;font-size:.78rem;">
+          Q: प्रश्न यहाँ लेख्नुहोस्<br>
+          A: जवाफ यहाँ लेख्नुहोस्<br>
+          <br>
+          Q: अर्को प्रश्न<br>
+          A: अर्को जवाफ
+        </code>
+        <div style="margin-top:8px;color:var(--text-dim);font-size:.75rem;">Tip: Save your Word/PDF document as a plain .txt file with this format, or paste directly below.</div>
+      </div>
+
+      <!-- Upload file -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-size:.78rem;color:var(--text-dim);letter-spacing:.05em;">Upload .txt file:</label>
+        <input type="file" id="settingsFileInput" accept=".txt,.text" onchange="handleSettingsFile(event)"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(245,200,66,.22);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;cursor:pointer;width:100%;">
+      </div>
+
+      <div style="text-align:center;color:var(--text-dim);font-size:.8rem;">— or paste text directly —</div>
+
+      <!-- Paste area -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-size:.78rem;color:var(--text-dim);letter-spacing:.05em;">Paste questions here:</label>
+        <textarea id="settingsPasteArea" rows="10"
+          placeholder="Q: पहिलो प्रश्न&#10;A: पहिलो जवाफ&#10;&#10;Q: दोस्रो प्रश्न&#10;A: दोस्रो जवाफ"
+          oninput="clearSettingsPreview()"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(245,200,66,.22);border-radius:8px;padding:12px;color:var(--text);font-family:'Noto Sans Devanagari',sans-serif;font-size:.88rem;outline:none;resize:vertical;width:100%;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(245,200,66,.22)'"></textarea>
+      </div>
+
+      <button class="btn-parse" onclick="parseAndPreview()">🔍 Parse & Preview Questions</button>
+      <div id="settingsParseError" style="display:none;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:10px 14px;color:#ff9b8a;font-size:.82rem;"></div>
+    </div>
+
+    <!-- Preview section -->
+    <div id="settingsPreviewSection" style="display:none;background:rgba(255,255,255,.03);border:1px solid rgba(46,204,113,.2);border-radius:14px;padding:22px 20px;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--easy);font-weight:700;">3. Preview Parsed Questions</div>
+        <span id="settingsPreviewCount" style="font-size:.8rem;color:var(--text-dim);"></span>
+      </div>
+      <div id="settingsPreviewList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;"></div>
+      <div id="settingsCountWarning" style="display:none;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:10px 14px;color:var(--medium);font-size:.82rem;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-apply" id="btnApplyQuestions" onclick="applyQuestions()">✅ Apply to Quiz</button>
+        <button class="btn-cancel-preview" onclick="clearSettingsPreview()">✕ Cancel</button>
+      </div>
+    </div>
+
+    <!-- Success message -->
+    <div id="settingsSuccess" style="display:none;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:10px;padding:14px 18px;color:var(--easy);font-size:.88rem;text-align:center;font-weight:600;"></div>
+  </div>
 </div>
 
 <!-- QUESTION MODAL -->
@@ -440,7 +797,7 @@ const QUESTIONS = [
   {q:"पावलको पहिलो मिसनरी यात्राको मुख्य साथी को थिए?", a:"बर्णाबास (१३:२)"},
   {q:"पावललाई पहिला कुन नामले चिनिन्थ्यो?", a:"सावल (१३:९)"},
   {q:"त्रोआसमा पावलको सन्देश सुन्दासुन्दै झ्यालबाट खसेर मर्ने को थिए?", a:"यटिकस (२०:९)"},
-  {q:"के रोमी नागरीक र दोषी नाथ हरियेको मानिसलाई कोर्रा लगाउन न्यायसंगत हो?", a:"कोर्रा (२२:२५)"},
+  {q:"के रोमी नागरीक र दोषी नाथहरियेको मनिसलाइ ______ लगाउन न्यायसंगत हो ?", a:"कोर्रा (२२:२५)"},
   {q:"कुन चाडको दिनमा चेलाहरूमाथि पवित्र आत्मा ओर्लनु भयो?", a:"पेन्तिकोस (२:१)"},
   {q:"पवित्र आत्मासँग झुट बोलेको कारण मण्डलीमा मर्ने पुरुष को थिए?", a:"हननिया (५:५)"},
   {q:"बौरी उठ्नु भएपछि येशू कति दिनसम्म पृथ्वीमा देखा पर्नुभयो?", a:"४० दिन (१:३)"},
@@ -535,13 +892,15 @@ const BIBLE_VERSES = [
 ];
 
 // Team colors
-const TEAM_COLORS = ['#3498DB','#9B59B6','#E74C3C','#E67E22','#1ABC9C','#F5C842'];
+const TEAM_COLORS = [
+  '#3498DB','#9B59B6','#E74C3C','#E67E22','#1ABC9C','#F5C842',
+  '#E91E8C','#00BCD4','#8BC34A','#FF5722'
+];
 const CIRC = 188.5;
 
 // ===================== STATE =====================
 let teams   = [];
-let scores  = []; // scores[teamIdx][roundIdx]
-// qSt[i]: {status:'open'|'passed'|'answered', passCnt:0, awarded:false}
+let scores  = [];
 let qSt     = [];
 let curRound = 0;
 let curQ    = null;
@@ -551,50 +910,154 @@ let timerTick = null;
 let revealed = false;
 let passing  = false;
 let quizEnded = false;
+let currentTurnIdx = 0;
+let answeringTeamIdx = 0;
 
-// Turn tracking
-let currentTurnIdx = 0;   // index into teams[] — who is picking right now
-let answeringTeamIdx = 0; // index into teams[] — who is currently answering (may differ after passes)
+// How many teams — default 6, range 3–10
+let numTeams = 6;
+// Stored team names (persisted across settings opens)
+let teamNames = Array.from({length:10}, (_,i) => `Team ${i+1}`);
 
-// Round turn order:
-// Easy (0) & Hard (2): ascending  0→1→2→3→4→5→0…
-// Medium (1):          descending 5→4→3→2→1→0→5…
 function getNextTurnIdx(idx, roundIdx){
   const n = teams.length;
-  if(roundIdx === 1) return (idx - 1 + n) % n; // descending
-  return (idx + 1) % n;                          // ascending
+  if(roundIdx === 1) return (idx - 1 + n) % n;
+  return (idx + 1) % n;
 }
 
 function getRoundStartTurnIdx(roundIdx){
-  if(roundIdx === 1) return teams.length - 1; // start at last team for Medium
-  return 0;                                    // start at first team for Easy & Hard
+  if(roundIdx === 1) return teams.length - 1;
+  return 0;
+}
+
+// ===================== AUTO-SAVE / RESTORE =====================
+const SAVE_KEY = 'nyfQuizState_v1';
+
+function saveState(){
+  if(!teams.length) return; // nothing to save before quiz starts
+  try{
+    const state = {
+      teams, scores, qSt, curRound,
+      currentTurnIdx, answeringTeamIdx,
+      numTeams, teamNames,
+      quizEnded,
+      quizTitle: document.getElementById('homeTitleEl').textContent,
+      activeScreen: document.querySelector('.screen.active')?.id || 'homeScreen',
+      savedAt: Date.now()
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  } catch(e){}
+}
+
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); } catch(e){}
+}
+
+function hasSavedState(){
+  try{ return !!localStorage.getItem(SAVE_KEY); } catch(e){ return false; }
+}
+
+function restoreState(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+    if(!s.teams || !s.teams.length) return false;
+
+    // Restore all state variables
+    teams            = s.teams;
+    scores           = s.scores;
+    qSt              = s.qSt;
+    curRound         = s.curRound || 0;
+    currentTurnIdx   = s.currentTurnIdx || 0;
+    answeringTeamIdx = s.answeringTeamIdx || 0;
+    numTeams         = s.numTeams || teams.length;
+    teamNames        = s.teamNames || teams.map((n,i)=> n || `Team ${i+1}`);
+    quizEnded        = s.quizEnded || false;
+
+    // Restore title
+    if(s.quizTitle){
+      document.getElementById('homeTitleEl').textContent    = s.quizTitle;
+      document.getElementById('quizLogoEl').textContent     = '✝ ' + s.quizTitle;
+      document.getElementById('scoresTitleEl').textContent  = s.quizTitle + ' — Scoreboard';
+      document.getElementById('pageTitle').textContent      = s.quizTitle;
+    }
+
+    // Rebuild home inputs with restored names
+    rebuildTeamInputs();
+
+    return true;
+  } catch(e){ return false; }
+}
+
+// Show/hide resume button on home screen
+function checkForSavedGame(){
+  if(!hasSavedState()) return;
+  const resumeBtn = document.getElementById('resumeBtn');
+  if(resumeBtn){
+    try{
+      const raw = localStorage.getItem(SAVE_KEY);
+      const s   = JSON.parse(raw);
+      const d   = new Date(s.savedAt);
+      const timeStr = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const dateStr = d.toLocaleDateString([], {month:'short', day:'numeric'});
+      resumeBtn.style.display = 'flex';
+      document.getElementById('resumeInfo').textContent =
+        `${s.teams.length} teams • ${dateStr} at ${timeStr}`;
+    } catch(e){
+      resumeBtn.style.display = 'flex';
+    }
+  }
+}
+
+function resumeQuiz(){
+  const ok = restoreState();
+  if(!ok){ clearSave(); return; }
+  showScreen('quizScreen');
+  buildStrip();
+  renderGrid();
+  renderTurnBox(false);
+  showVerse();
+  // Switch to the correct round tab
+  document.querySelectorAll('.round-tab').forEach((t,i)=>t.classList.toggle('active',i===curRound));
+}
+
+function discardSave(){
+  clearSave();
+  document.getElementById('resumeBtn').style.display = 'none';
 }
 
 // ===================== HOME =====================
 (function buildHome(){
+  rebuildTeamInputs();
+})();
+
+function rebuildTeamInputs(){
   const g = document.getElementById('teamInputs');
-  for(let i=0;i<6;i++){
+  g.innerHTML = '';
+  for(let i = 0; i < numTeams; i++){
     g.innerHTML += `<div class="tg">
       <label>Team ${i+1}</label>
-      <input type="text" id="ti${i}" value="Team ${i+1}">
+      <input type="text" id="ti${i}" value="${teamNames[i]}">
     </div>`;
   }
-})();
+}
 
 function startQuiz(){
   teams  = [];
-  for(let i=0;i<6;i++) teams.push(document.getElementById('ti'+i).value.trim()||`Team ${i+1}`);
-  // scores[team][round]
+  for(let i=0;i<numTeams;i++) teams.push(document.getElementById('ti'+i).value.trim()||`Team ${i+1}`);
+  teams.forEach((n,i)=> teamNames[i] = n);
   scores = teams.map(()=>[0,0,0]);
   qSt    = Array.from({length:TOTAL_Q},()=>({status:'open',passCnt:0,awarded:false}));
   curRound = 0; quizEnded = false;
   currentTurnIdx   = getRoundStartTurnIdx(0);
   answeringTeamIdx = currentTurnIdx;
+  clearSave(); // fresh start wipes old save
   showScreen('quizScreen');
   buildStrip();
   renderGrid();
   renderTurnBox(true);
   showVerse();
+  saveState();
 }
 
 // ===================== SCREENS =====================
@@ -677,11 +1140,11 @@ function flashChip(i){
 function switchRound(r){
   curRound=r;
   document.querySelectorAll('.round-tab').forEach((t,i)=>t.classList.toggle('active',i===r));
-  // Reset turn to correct starting position for this round
   currentTurnIdx = getRoundStartTurnIdx(r);
   renderGrid();
   renderTurnBox(true);
   showVerse();
+  saveState();
 }
 
 function renderGrid(){
@@ -792,6 +1255,7 @@ function revealAnswer(){
   if(curQ!==null){
     qSt[curQ].status='answered';
     qSt[curQ].awarded=false;
+    saveState();
   }
 
   // Show countdown and auto-close after 5 seconds
@@ -821,7 +1285,7 @@ function passQuestion(){
   updatePassBtn();
   buildAwardGrid();
   renderGrid();
-  // Speak "Pass to [next team]" then wait 1.5s before starting timer
+  saveState();
   speak(`Pass to ${teams[answeringTeamIdx]}.`);
   setTimeout(()=> startTimer(10), 1500);
 }
@@ -868,6 +1332,7 @@ function awardScore(ti){
   buildAwardGrid(); stopTimer();
   playCelebration();
   currentTurnIdx = getNextTurnIdx(currentTurnIdx, rnd);
+  saveState();
 
   const msg = `Correct! ${pts} points to ${teams[ti]}.`;
   if(ttsEnabled && window.speechSynthesis){
@@ -893,6 +1358,7 @@ function awardNone(){
   qSt[curQ].status='answered'; qSt[curQ].awarded=true;
   stopTimer(); buildAwardGrid();
   currentTurnIdx = getNextTurnIdx(currentTurnIdx, rnd);
+  saveState();
   setTimeout(()=>{
     closeModal();renderGrid();renderTurnBox(true);
   },400);
@@ -1176,6 +1642,7 @@ function markCorrect(){
   qs.status='answered'; qs.awarded=true;
   stopTimer();
   playCelebration();
+  saveState();
   document.getElementById('ansBox').classList.add('show');
   document.getElementById('btnCorrect').disabled=true;
   document.getElementById('btnWrong').disabled=true;
@@ -1222,188 +1689,224 @@ function cancelEnd(){
 function endQuiz(){
   document.getElementById('confirmOverlay').classList.remove('open');
   quizEnded = true;
-  // Always launch the full dramatic reveal — tiebreaker is handled inside it
+  clearSave(); // quiz is done — no need to resume
   launchDramaticReveal();
 }
 
-// ── TIEBREAKER (called mid-reveal when tied teams are reached) ──
-function showTiebreaker(tiedTeams, pts, onWinnerDecided){
+// ── TIEBREAKER commentary (overlay removed — handled inline in position buttons) ──
+// Speaks the tiebreaker announcement and calls callback when done
+function announceTiebreaker(tiedTeams, pts, callback){
   const names = tiedTeams.map(t => t.name).join(' and ');
-  const msg = `We have a tie! Both ${names} have scored ${pts} points each. But there can only be one winner. The host will now ask a final one-on-one question to the tied teams. The team that answers correctly will be declared the winner. I now hand the mic to the host.`;
-
-  speakAndWait(msg, ()=>{
-    const overlay = document.getElementById('tiebreakOverlay');
-    overlay.classList.add('open');
-    document.getElementById('tiebreakMsg').textContent =
-      `${names} are tied with ${pts} points each. Host: ask a tiebreaker question, then click the winning team below.`;
-    const container = document.getElementById('tiebreakTeams');
-    container.innerHTML = '';
-    tiedTeams.forEach(t => {
-      const btn = document.createElement('button');
-      btn.className = 'tiebreak-team-btn';
-      btn.style.borderColor = t.color;
-      btn.style.color = t.color;
-      btn.style.background = t.color + '18';
-      btn.textContent = `🏆 ${t.name} Wins`;
-      btn.onclick = () => {
-        overlay.classList.remove('open');
-        document.getElementById('tiebreakWaiting').classList.remove('show');
-        onWinnerDecided(t);
-      };
-      container.appendChild(btn);
-    });
-    document.getElementById('tiebreakWaiting').classList.add('show');
-  });
+  const msg = `We have a tie! Both ${names} have scored ${pts} points each. But there can only be one winner. The host will now ask a final one-on-one question. I now hand the mic to the host.`;
+  speakAndWait(msg, callback);
 }
 
-// ── DRAMATIC REVEAL ──
+// ── DRAMATIC REVEAL — Host-controlled position buttons ──
+let revealSorted  = [];
+let tiedRevealTeams = []; // the two tied teams shown in scoreboard
+
 function launchDramaticReveal(){
   showScreen('scoresScreen');
   document.getElementById('backBtn').style.display = 'none';
   document.getElementById('revealCards').style.display = 'none';
-  document.getElementById('endRevealList').style.display = 'flex';
-  document.getElementById('scoresSub').textContent = 'Quiz has ended — Revealing scores…';
+  document.getElementById('endQuizPanel').style.display = 'flex';
+  document.getElementById('endRevealList').innerHTML = '';
+  document.getElementById('scoresSub').textContent = 'Host: click a position button to reveal that team';
 
-  const totals = teams.map((_,i) => scores[i].reduce((a,b)=>a+b,0));
-  const maxPts = Math.max(...totals);
+  const totals    = teams.map((_,i) => scores[i].reduce((a,b)=>a+b,0));
+  const maxPts    = Math.max(...totals);
   const tiedAtTop = teams.filter((_,i) => totals[i] === maxPts).length > 1;
 
-  // Sort: lowest first. If tied at top, tied teams go last together (resolved inside revealTiedGroup)
   let allTeams = teams.map((name,i) => ({name, total:totals[i], color:TEAM_COLORS[i], idx:i}));
-  let sorted;
   if(tiedAtTop){
     const nonTied = allTeams.filter(t => t.total < maxPts).sort((a,b) => a.total - b.total);
     const tied    = allTeams.filter(t => t.total === maxPts);
-    sorted = [...nonTied, ...tied];
+    revealSorted    = [...nonTied, ...tied];
+    tiedRevealTeams = tied;
   } else {
-    sorted = allTeams.sort((a,b) => a.total - b.total);
+    revealSorted    = [...allTeams].sort((a,b) => a.total - b.total);
+    tiedRevealTeams = [];
   }
 
-  // Build list rows (hidden, revealed one by one)
-  const list = document.getElementById('endRevealList');
-  list.innerHTML = '';
-  sorted.forEach((t, pos) => {
-    const row = document.createElement('div');
-    row.className = 'end-reveal-row';
-    row.id = `erow${pos}`;
-    row.style.borderLeftColor = t.color;
-    row.innerHTML = `
-      <div class="er-rank" id="erank${pos}">—</div>
-      <div class="er-name" style="color:${t.color}">${t.name}</div>
-      <div style="text-align:right">
-        <div class="er-pts" id="epts${pos}">?</div>
-        <div class="er-badge" id="ebadge${pos}"></div>
-      </div>`;
-    list.appendChild(row);
-  });
+  buildPositionButtons(tiedAtTop, maxPts);
+}
 
-  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
+function buildPositionButtons(tiedAtTop, maxPts){
+  const container = document.getElementById('positionBtns');
+  container.innerHTML = '';
+  const n        = revealSorted.length;
+  const ordinals = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
 
-  function revealNext(pos){
-    if(pos >= sorted.length) return;
-    const t = sorted[pos];
-    const rank = sorted.length - pos; // highest pos = rank 1
+  // Build buttons lowest→highest (last place first, winner last)
+  // In tie case: instead of "Reveal 1st" + "Reveal 2nd", show "⚡ Tiebreaker" x2
+  for(let rank = n; rank >= 1; rank--){
+    const btn   = document.createElement('button');
+    const isTiedSlot = tiedAtTop && (rank === 1 || rank === 2);
 
-    // Detect: we've reached the tied teams and no winner decided yet
-    if(tiedAtTop && forcedWinnerIdx === null && t.total === maxPts && pos === sorted.length - allTeams.filter(x => x.total === maxPts).length){
-      // Reveal all tied teams first (show their scores), then trigger tiebreaker
-      revealTiedGroup(pos, sorted.filter(x => x.total === maxPts));
-      return;
-    }
-
-    const row = document.getElementById(`erow${pos}`);
-    row.classList.add('visible');
-    document.getElementById(`epts${pos}`).textContent = t.total;
-    document.getElementById(`erank${pos}`).textContent = medals[rank-1];
-
-    if(rank === 1){
-      // Winner — no tie (clear winner with no tiebreaker needed)
-      row.classList.add('rank-1');
-      document.getElementById(`ebadge${pos}`).textContent = '🏆 WINNER';
-      document.getElementById(`ebadge${pos}`).style.color = 'var(--gold)';
-      playCrowdCelebration();
-      const msg = `And the winner is... ${t.name}! With ${t.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
-      speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 400); });
-
+    let label, cls;
+    if(isTiedSlot){
+      label = '⚡ Tiebreaker';
+      cls   = 'pos-btn other-btn';
+      // Style with orange tiebreaker colour
+      btn.style.borderColor = 'rgba(230,126,34,.6)';
+      btn.style.color       = 'var(--medium)';
+      btn.style.background  = 'rgba(230,126,34,.08)';
+    } else if(rank === 1){
+      label = '🏆 Reveal Winner';
+      cls   = 'pos-btn winner-btn';
     } else if(rank === 2){
-      row.classList.add('rank-2');
-      document.getElementById(`ebadge${pos}`).textContent = '🥈 2nd Place';
-      const msg = `${t.name} secured 2nd position with ${t.total} points. Congratulations!`;
-      speakAndWait(msg, ()=>{ setTimeout(()=> revealNext(pos+1), 2000); });
-
+      label = '🥈 Reveal 2nd Place';
+      cls   = 'pos-btn second-btn';
     } else {
-      const msg = `${t.name} scored ${t.total} points.`;
-      speakAndWait(msg, ()=>{ setTimeout(()=> revealNext(pos+1), 2000); });
+      label = `Reveal ${ordinals[rank-1]} Position`;
+      cls   = 'pos-btn other-btn';
     }
-  }
 
-  // Reveal the tied group: show their scores one by one, then announce tie and open tiebreaker
-  function revealTiedGroup(startPos, tiedGroup){
-    let i = 0;
-    function revealOneTied(){
-      if(i >= tiedGroup.length){
-        // All tied shown — now announce tiebreaker
-        const tiedTeamObjs = sorted.slice(startPos);
-        showTiebreaker(tiedTeamObjs, maxPts, (winner)=>{
-          // Tiebreaker decided — update existing rows in place, NO list rebuild
-          const losingTied = tiedTeamObjs.filter(t => t.idx !== winner.idx);
+    btn.className   = cls;
+    btn.textContent = label;
+    btn.id          = `posBtn${rank}`;
 
-          // Mark the loser(s) as 2nd place in their existing rows
-          losingTied.forEach(t => {
-            const loserPos = sorted.findIndex(s => s.idx === t.idx);
-            if(loserPos >= 0){
-              const loserRow = document.getElementById(`erow${loserPos}`);
-              if(loserRow) loserRow.classList.add('rank-2');
-              const badge = document.getElementById(`ebadge${loserPos}`);
-              if(badge){ badge.textContent = '🥈 2nd Place'; badge.style.color = '#C0C0C0'; }
-              const rank = document.getElementById(`erank${loserPos}`);
-              if(rank) rank.textContent = '🥈';
-            }
-          });
+    btn.onclick = () => {
+      btn.disabled = true;
 
-          // Mark the winner row
-          const winnerPos = sorted.findIndex(s => s.idx === winner.idx);
-          if(winnerPos >= 0){
-            const winRow = document.getElementById(`erow${winnerPos}`);
-            if(winRow) winRow.classList.add('rank-1');
-            const badge = document.getElementById(`ebadge${winnerPos}`);
-            if(badge){ badge.textContent = '🏆 WINNER'; badge.style.color = 'var(--gold)'; }
-            const rank = document.getElementById(`erank${winnerPos}`);
-            if(rank) rank.textContent = '🥇';
-          }
+      if(isTiedSlot){
+        // Both tiebreaker slots work together —
+        // when EITHER is clicked, reveal that team as "Tiebreaker" in the list
+        // and when BOTH have been clicked, fire the tiebreaker announcement
+        const tbBtn1 = document.getElementById('posBtn1');
+        const tbBtn2 = document.getElementById('posBtn2');
+        const pos    = n - rank;
+        const team   = revealSorted[pos];
+        appendTiebreakerRow(team);
 
-          // Now do winner commentary, then 2nd place commentary
-          playCrowdCelebration();
-          const winMsg = `And the winner is... ${winner.name}! With ${winner.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
-          speakExcited(winMsg, ()=>{
-            setTimeout(playCrowdCelebration, 400);
-            // After winner speech, announce 2nd place
-            setTimeout(()=>{
-              losingTied.forEach(t => {
-                const msg2nd = `${t.name} secured 2nd position with ${t.total} points. Congratulations!`;
-                speakAndWait(msg2nd);
-              });
-            }, 1500);
-          });
-        });
+        // Check if both tiebreaker buttons have now been clicked
+        const both = tbBtn1 && tbBtn1.disabled && tbBtn2 && tbBtn2.disabled;
+        if(both){
+          // Both revealed — announce tiebreaker and show "Click for Winner" buttons
+          setTimeout(()=>{
+            announceTiebreaker(tiedRevealTeams, maxPts, ()=>{
+              showClickForWinner(tiedRevealTeams);
+            });
+          }, 800);
+        }
         return;
       }
-      const t = tiedGroup[i];
-      const pos = startPos + i;
-      const row = document.getElementById(`erow${pos}`);
-      row.classList.add('visible');
-      document.getElementById(`epts${pos}`).textContent = t.total;
-      document.getElementById(`erank${pos}`).textContent = '⚡';
-      document.getElementById(`ebadge${pos}`).textContent = 'TIED';
-      document.getElementById(`ebadge${pos}`).style.color = 'var(--medium)';
-      const msg = `${t.name} scored ${t.total} points.`;
-      i++;
-      speakAndWait(msg, ()=>{ setTimeout(revealOneTied, 1500); });
-    }
-    revealOneTied();
-  }
 
-  setTimeout(()=> revealNext(0), 800);
+      // Normal position reveal
+      appendRevealRow(revealSorted[n - rank], rank, rank === 1);
+    };
+
+    container.appendChild(btn);
+  }
+}
+
+// Append a "Tiebreaker" styled row (before winner is decided)
+function appendTiebreakerRow(team){
+  const list = document.getElementById('endRevealList');
+  const row  = document.createElement('div');
+  row.className = 'tb-reveal-row';
+  row.id = `tbrow_${team.idx}`;
+  row.innerHTML = `
+    <div style="font-size:1.3rem;">⚡</div>
+    <div style="flex:1">
+      <div style="font-weight:700;color:${team.color};font-size:.95rem;">${team.name}</div>
+      <div class="tr-badge">TIEBREAKER • ${team.total} pts</div>
+    </div>
+    <div id="tbwinner_${team.idx}"></div>`;
+  list.appendChild(row);
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{ row.classList.add('visible'); }, 30);
+  });
+}
+
+// After both tiebreaker rows revealed — show "Click for Winner" buttons inside each row
+function showClickForWinner(tiedTeams){
+  tiedTeams.forEach(team => {
+    const slot = document.getElementById(`tbwinner_${team.idx}`);
+    if(!slot) return;
+    const btn = document.createElement('button');
+    btn.className   = 'btn-click-winner';
+    btn.textContent = '👑 Click for Winner';
+    btn.onclick     = () => {
+      // Disable all "Click for Winner" buttons immediately
+      document.querySelectorAll('.btn-click-winner').forEach(b => b.disabled = true);
+      const winner = team;
+      const loser  = tiedTeams.find(t => t.idx !== winner.idx);
+      // Upgrade winner row → winner
+      upgradeTiebreakerRow(winner, 1);
+      // Upgrade loser row  → 2nd place
+      setTimeout(()=> upgradeTiebreakerRow(loser, 2), 1800);
+    };
+    slot.appendChild(btn);
+  });
+}
+
+// Upgrade a tiebreaker row to winner or 2nd place
+function upgradeTiebreakerRow(team, rank){
+  const row = document.getElementById(`tbrow_${team.idx}`);
+  const medals = ['🥇','🥈'];
+  const ordinalsFull = ['','1st','2nd'];
+
+  if(rank === 1){
+    row.style.background   = 'rgba(245,200,66,.1)';
+    row.style.borderColor  = 'rgba(245,200,66,.5)';
+    row.innerHTML = `
+      <div class="er-rank">🥇</div>
+      <div class="er-name" style="color:${team.color};font-weight:700;font-size:.95rem;">${team.name}</div>
+      <div style="text-align:right">
+        <div class="er-pts" style="font-size:1.4rem;font-weight:800;color:var(--gold)">${team.total}</div>
+        <div class="er-badge" style="color:var(--gold)">🏆 WINNER</div>
+      </div>`;
+    playCrowdCelebration();
+    const msg = `And the winner is... ${team.name}! With ${team.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
+    speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 400); });
+  } else {
+    row.style.background   = 'rgba(192,192,192,.06)';
+    row.style.borderColor  = 'rgba(192,192,192,.4)';
+    row.innerHTML = `
+      <div class="er-rank">🥈</div>
+      <div class="er-name" style="color:${team.color};font-weight:700;font-size:.95rem;">${team.name}</div>
+      <div style="text-align:right">
+        <div class="er-pts" style="font-size:1.4rem;font-weight:800;color:var(--gold)">${team.total}</div>
+        <div class="er-badge" style="color:#C0C0C0">🥈 2nd Place</div>
+      </div>`;
+    speakAndWait(`Congratulations ${team.name} in securing 2nd position with ${team.total} points!`, null);
+  }
+}
+
+// Append a normal position row
+function appendRevealRow(team, rank, isWinner){
+  const list     = document.getElementById('endRevealList');
+  const medals   = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  const ordinalsFull = ['','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+
+  const row = document.createElement('div');
+  row.className = 'end-reveal-row' + (rank===1?' rank-1':rank===2?' rank-2':'');
+  row.style.borderLeftColor = team.color;
+  row.style.opacity = '0'; row.style.transform = 'translateY(20px)';
+  row.innerHTML = `
+    <div class="er-rank">${medals[rank-1]}</div>
+    <div class="er-name" style="color:${team.color}">${team.name}</div>
+    <div style="text-align:right">
+      <div class="er-pts">${team.total}</div>
+      <div class="er-badge" style="color:${rank===1?'var(--gold)':rank===2?'#C0C0C0':'var(--text-dim)'}">
+        ${rank===1?'🏆 WINNER':rank===2?'🥈 2nd Place':ordinalsFull[rank]+' Place'}
+      </div>
+    </div>`;
+  list.appendChild(row);
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{ row.style.transition='all .5s ease'; row.style.opacity='1'; row.style.transform='translateY(0)'; }, 30);
+  });
+
+  if(isWinner){
+    playCrowdCelebration();
+    const msg = `And the winner is... ${team.name}! With ${team.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
+    speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 400); });
+  } else if(rank === 2){
+    speakAndWait(`Congratulations ${team.name} in securing 2nd position with ${team.total} points!`, null);
+  } else {
+    speakAndWait(`${team.name} in ${ordinalsFull[rank]} position with ${team.total} points.`, null);
+  }
 }
 
 // ── SPEAK HELPERS ──
@@ -1508,12 +2011,305 @@ function playCrowdCelebration(){
   } catch(e){}
 }
 
-// ===================== SCOREBOARD (mid-quiz suspense reveal) =====================
+// ===================== SETTINGS =====================
+let settingsSelectedRound = null;
+let settingsParsedQuestions = [];
+let settingsCalledFromQuiz = false;
+
+function openSettingsFromHome(){
+  settingsCalledFromQuiz = false;
+  const currentTitle = document.getElementById('homeTitleEl').textContent;
+  document.getElementById('titleInput').value = currentTitle;
+  initTeamSettingsUI();
+  showScreen('settingsScreen');
+  resetSettingsUI();
+}
+
+function openSettingsFromQuiz(){
+  settingsCalledFromQuiz = true;
+  const currentTitle = document.getElementById('homeTitleEl').textContent;
+  document.getElementById('titleInput').value = currentTitle;
+  initTeamSettingsUI();
+  showScreen('settingsScreen');
+  resetSettingsUI();
+}
+
+function applyTitle(){
+  const val = document.getElementById('titleInput').value.trim();
+  if(!val) return;
+  document.getElementById('homeTitleEl').textContent = val;
+  document.getElementById('quizLogoEl').textContent  = '✝ ' + val;
+  document.getElementById('scoresTitleEl').textContent = val + ' — Scoreboard';
+  document.getElementById('pageTitle').textContent   = val;
+  const msg = document.getElementById('titleAppliedMsg');
+  msg.style.display = 'inline';
+  setTimeout(() => msg.style.display = 'none', 2500);
+}
+
+// ===================== TEAM SETTINGS =====================
+let settingsTeamCount = 6; // local to settings UI, applied on confirm
+
+function initTeamSettingsUI(){
+  settingsTeamCount = numTeams;
+  // Sync names from current home inputs if quiz hasn't started yet
+  for(let i=0;i<10;i++){
+    const inp = document.getElementById('ti'+i);
+    if(inp) teamNames[i] = inp.value.trim() || `Team ${i+1}`;
+  }
+  renderTeamSettingsUI();
+}
+
+function renderTeamSettingsUI(){
+  document.getElementById('teamCountDisplay').textContent = settingsTeamCount;
+
+  // Dot bar indicator
+  const bar = document.getElementById('teamCountBar');
+  bar.innerHTML = '';
+  for(let i=0;i<10;i++){
+    const dot = document.createElement('div');
+    const active = i < settingsTeamCount;
+    dot.style.cssText = `width:18px;height:18px;border-radius:50%;border:2px solid ${TEAM_COLORS[i]};background:${active?TEAM_COLORS[i]:'transparent'};transition:all .2s;`;
+    bar.appendChild(dot);
+  }
+
+  // Name editor grid
+  const grid = document.getElementById('teamNameEditorGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<settingsTeamCount;i++){
+    grid.innerHTML += `<div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:.7rem;color:${TEAM_COLORS[i]};font-weight:600;letter-spacing:.04em;">Team ${i+1}</label>
+      <input type="text" id="settingsTeamName${i}" value="${teamNames[i]}"
+        style="background:rgba(255,255,255,.06);border:1.5px solid ${TEAM_COLORS[i]}60;border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Noto Sans Devanagari',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;width:100%;"
+        onfocus="this.style.borderColor='${TEAM_COLORS[i]}'" onblur="this.style.borderColor='${TEAM_COLORS[i]}60'">
+    </div>`;
+  }
+}
+
+function changeTeamCount(delta){
+  const next = settingsTeamCount + delta;
+  if(next < 3 || next > 10) return;
+  settingsTeamCount = next;
+  renderTeamSettingsUI();
+}
+
+function applyTeamSettings(){
+  // Save edited names
+  for(let i=0;i<settingsTeamCount;i++){
+    const inp = document.getElementById(`settingsTeamName${i}`);
+    if(inp) teamNames[i] = inp.value.trim() || `Team ${i+1}`;
+  }
+  // Apply team count
+  numTeams = settingsTeamCount;
+  // Rebuild home screen inputs
+  rebuildTeamInputs();
+  // Update home subtitle
+  const subEl = document.getElementById('homeSubEl');
+  if(subEl) subEl.innerHTML = `Book of Acts &nbsp;•&nbsp; NNRV Nepali Bible &nbsp;•&nbsp; ${numTeams} Teams &nbsp;•&nbsp; 78 Questions`;
+
+  const msg = document.getElementById('teamsAppliedMsg');
+  msg.style.display = 'inline';
+  setTimeout(()=> msg.style.display='none', 2500);
+}
+
+function settingsGoBack(){
+  if(settingsCalledFromQuiz){
+    showScreen('quizScreen');
+  } else {
+    showScreen('homeScreen');
+  }
+  settingsCalledFromQuiz = false;
+  resetSettingsUI();
+}
+
+function resetSettingsUI(){
+  settingsSelectedRound = null;
+  settingsParsedQuestions = [];
+  document.querySelectorAll('.settings-round-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('settingsRoundInfo').textContent = '';
+  document.getElementById('settingsUploadSection').style.display = 'none';
+  document.getElementById('settingsPreviewSection').style.display = 'none';
+  document.getElementById('settingsSuccess').style.display = 'none';
+  document.getElementById('settingsPasteArea').value = '';
+  document.getElementById('settingsFileInput').value = '';
+  document.getElementById('settingsParseError').style.display = 'none';
+}
+
+function selectSettingsRound(r){
+  settingsSelectedRound = r;
+  settingsParsedQuestions = [];
+  // Update buttons
+  document.querySelectorAll('.settings-round-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === r);
+  });
+  // Show info
+  const info = ['Easy Round — Questions 1–30 (30 questions)', 'Medium Round — Questions 31–60 (30 questions)', 'Hard Round — Questions 61–78 (18 questions)'];
+  const counts = [30, 30, 18];
+  document.getElementById('settingsRoundInfo').innerHTML =
+    `<span style="color:var(--text)">Selected: </span><strong style="color:var(--${['easy','medium','hard'][r]})">${info[r]}</strong>
+     <br><span style="color:var(--text-dim);font-size:.75rem;">Your file or paste should contain exactly <strong style="color:var(--text)">${counts[r]} questions</strong> in the required format.</span>`;
+  // Show upload section
+  document.getElementById('settingsUploadSection').style.display = 'flex';
+  document.getElementById('settingsPreviewSection').style.display = 'none';
+  document.getElementById('settingsSuccess').style.display = 'none';
+  document.getElementById('settingsPasteArea').value = '';
+  document.getElementById('settingsFileInput').value = '';
+  document.getElementById('settingsParseError').style.display = 'none';
+}
+
+function handleSettingsFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('settingsPasteArea').value = e.target.result;
+    clearSettingsPreview();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseAndPreview(){
+  if(settingsSelectedRound === null){
+    showSettingsError('Please select a round first.');
+    return;
+  }
+  const raw = document.getElementById('settingsPasteArea').value.trim();
+  if(!raw){
+    showSettingsError('Please paste or upload your questions first.');
+    return;
+  }
+  document.getElementById('settingsParseError').style.display = 'none';
+
+  // Parse: find Q: ... A: ... pairs, flexible with spacing/newlines
+  const parsed = [];
+  // Split into lines, clean up
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  let i = 0;
+  while(i < lines.length){
+    const line = lines[i];
+    // Match Q: prefix (case insensitive, flexible spacing)
+    if(/^q\s*:/i.test(line)){
+      const qText = line.replace(/^q\s*:\s*/i, '').trim();
+      // Look ahead for A: line
+      let aText = '';
+      if(i+1 < lines.length && /^a\s*:/i.test(lines[i+1])){
+        aText = lines[i+1].replace(/^a\s*:\s*/i, '').trim();
+        i += 2;
+      } else {
+        i++;
+      }
+      if(qText) parsed.push({q: qText, a: aText || '—'});
+    } else {
+      i++;
+    }
+  }
+
+  if(parsed.length === 0){
+    showSettingsError('No questions found. Make sure each question starts with "Q:" and answer with "A:" on the next line.');
+    return;
+  }
+
+  settingsParsedQuestions = parsed;
+  showSettingsPreview(parsed);
+}
+
+function showSettingsPreview(parsed){
+  const roundCounts = [30, 30, 18];
+  const expected = roundCounts[settingsSelectedRound];
+  const roundNames = ['Easy', 'Medium', 'Hard'];
+  const rCls = ['easy','medium','hard'];
+
+  const section = document.getElementById('settingsPreviewSection');
+  section.style.display = 'flex';
+  document.getElementById('settingsPreviewCount').textContent =
+    `${parsed.length} questions parsed`;
+
+  // Warning if count doesn't match
+  const warnEl = document.getElementById('settingsCountWarning');
+  if(parsed.length !== expected){
+    warnEl.style.display = 'block';
+    warnEl.textContent = `⚠ Warning: ${roundNames[settingsSelectedRound]} round expects ${expected} questions but ${parsed.length} were found. You can still apply, but question numbers may not match.`;
+  } else {
+    warnEl.style.display = 'none';
+  }
+
+  // Build preview list
+  const list = document.getElementById('settingsPreviewList');
+  list.innerHTML = '';
+  const offset = [0, 30, 60][settingsSelectedRound];
+  parsed.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'preview-q-item';
+    div.innerHTML = `
+      <div class="preview-q-num" style="color:var(--${rCls[settingsSelectedRound]})">Q${offset + idx + 1}</div>
+      <div class="preview-q-text">${item.q}</div>
+      <div class="preview-a-text">✓ ${item.a}</div>`;
+    list.appendChild(div);
+  });
+
+  document.getElementById('settingsPreviewSection').scrollIntoView({behavior:'smooth'});
+}
+
+function clearSettingsPreview(){
+  settingsParsedQuestions = [];
+  document.getElementById('settingsPreviewSection').style.display = 'none';
+  document.getElementById('settingsParseError').style.display = 'none';
+}
+
+function applyQuestions(){
+  if(settingsParsedQuestions.length === 0){
+    showSettingsError('No questions to apply. Please parse first.');
+    return;
+  }
+  const offset = [0, 30, 60][settingsSelectedRound];
+  const count  = settingsParsedQuestions.length;
+
+  // Replace questions in the live QUESTIONS array
+  settingsParsedQuestions.forEach((item, idx) => {
+    QUESTIONS[offset + idx] = {q: item.q, a: item.a};
+  });
+
+  // If new count is less than original, trim; if more, expand (capped by round size)
+  const originalCounts = [30, 30, 18];
+  const origCount = originalCounts[settingsSelectedRound];
+  if(count < origCount){
+    // Fill remaining slots with a placeholder so indices don't break
+    for(let i = count; i < origCount; i++){
+      QUESTIONS[offset + i] = {q:`(Question ${offset+i+1} not provided)`, a:'—'};
+    }
+  }
+
+  // Update ROUND_CONFIG count for hard round if changed
+  ROUND_CONFIG[settingsSelectedRound] = {
+    ...ROUND_CONFIG[settingsSelectedRound],
+    count: Math.min(count, origCount)
+  };
+
+  const roundNames = ['Easy', 'Medium', 'Hard'];
+  const successEl = document.getElementById('settingsSuccess');
+  successEl.style.display = 'block';
+  successEl.textContent = `✅ ${roundNames[settingsSelectedRound]} Round updated successfully with ${Math.min(count, origCount)} questions! Changes are live.`;
+
+  document.getElementById('settingsPreviewSection').style.display = 'none';
+  document.getElementById('settingsPasteArea').value = '';
+  document.getElementById('settingsFileInput').value = '';
+  settingsParsedQuestions = [];
+
+  // Re-render grid if we're mid-quiz and on that round
+  if(settingsCalledFromQuiz) renderGrid();
+
+  successEl.scrollIntoView({behavior:'smooth'});
+}
+
+function showSettingsError(msg){
+  const el = document.getElementById('settingsParseError');
+  el.style.display = 'block';
+  el.textContent = '⚠ ' + msg;
+}
 function showScores(isEnd){
   if(isEnd){ endQuiz(); return; }
   document.getElementById('backBtn').style.display = 'inline-block';
   document.getElementById('revealCards').style.display = 'flex';
-  document.getElementById('endRevealList').style.display = 'none';
+  document.getElementById('endQuizPanel').style.display = 'none';
   document.getElementById('scoresSub').textContent = 'Click "Reveal" under each team to see their score';
   buildRevealCards();
   showScreen('scoresScreen');
@@ -1559,6 +2355,11 @@ function backToQuiz(){
   if(quizEnded) return;
   showScreen('quizScreen');
 }
+
+// ===================== AUTO-RESTORE ON PAGE LOAD =====================
+(function onLoad(){
+  checkForSavedGame();
+})();
 </script>
 </body>
 </html>
