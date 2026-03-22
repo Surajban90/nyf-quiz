@@ -663,6 +663,37 @@
       </div>
     </div>
 
+    <!-- Round name editor -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(231,76,60,.2);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--hard);font-weight:700;">🏷 Round Names</div>
+      <div style="font-size:.82rem;color:var(--text-dim);">Rename the three rounds — e.g. "Bronze / Silver / Gold" or "Junior / Senior / Expert".</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:.72rem;color:var(--easy);font-weight:600;letter-spacing:.05em;">Round 1</label>
+          <input type="text" id="roundName0" value="Easy"
+            style="background:rgba(255,255,255,.06);border:1.5px solid rgba(46,204,113,.3);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;width:100%;"
+            onfocus="this.style.borderColor='var(--easy)'" onblur="this.style.borderColor='rgba(46,204,113,.3)'">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:.72rem;color:var(--medium);font-weight:600;letter-spacing:.05em;">Round 2</label>
+          <input type="text" id="roundName1" value="Medium"
+            style="background:rgba(255,255,255,.06);border:1.5px solid rgba(230,126,34,.3);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;width:100%;"
+            onfocus="this.style.borderColor='var(--medium)'" onblur="this.style.borderColor='rgba(230,126,34,.3)'">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:.72rem;color:var(--hard);font-weight:600;letter-spacing:.05em;">Round 3</label>
+          <input type="text" id="roundName2" value="Hard"
+            style="background:rgba(255,255,255,.06);border:1.5px solid rgba(231,76,60,.3);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;width:100%;"
+            onfocus="this.style.borderColor='var(--hard)'" onblur="this.style.borderColor='rgba(231,76,60,.3)'">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="applyRoundNames()"
+          style="background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.4);color:var(--hard);border-radius:8px;padding:9px 22px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;">✓ Apply Round Names</button>
+        <span id="roundNamesMsg" style="display:none;color:var(--easy);font-size:.82rem;">✅ Round names updated!</span>
+      </div>
+    </div>
+
     <!-- Round selector -->
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:16px;">
       <div style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-weight:700;">1. Select Round to Update</div>
@@ -787,15 +818,57 @@
   </div>
 </div>
 
-<!-- TIEBREAKER OVERLAY -->
-<div class="tiebreak-overlay" id="tiebreakOverlay">
-  <div class="tiebreak-box">
-    <div class="tb-icon">⚡</div>
-    <h2>Tiebreaker!</h2>
-    <p id="tiebreakMsg"></p>
-    <div class="tiebreak-label">Host: click the team that answered correctly</div>
-    <div class="tiebreak-teams" id="tiebreakTeams"></div>
-    <div class="tiebreak-waiting" id="tiebreakWaiting">Waiting for host to decide the winner…</div>
+<!-- TIEBREAKER SCREEN -->
+<div id="tiebreakerScreen" class="screen">
+  <div style="width:100%;max-width:760px;margin:0 auto;padding:28px 18px;display:flex;flex-direction:column;gap:18px;align-items:center;">
+    <div style="text-align:center;">
+      <div style="font-size:2rem;margin-bottom:6px;">⚡</div>
+      <h2 style="color:var(--medium);font-size:1.5rem;font-weight:800;">Tiebreaker Round</h2>
+      <p id="tbIntroText" style="color:var(--text-dim);font-size:.88rem;margin-top:6px;"></p>
+    </div>
+
+    <!-- Scoreboard for tiebreaker teams -->
+    <div id="tbScoreStrip" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;"></div>
+
+    <!-- Current round info -->
+    <div id="tbRoundInfo" style="background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:10px 18px;text-align:center;font-size:.82rem;color:var(--medium);font-weight:600;width:100%;"></div>
+
+    <!-- Question box -->
+    <div id="tbQuestionBox" style="display:none;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:22px 18px;display:none;flex-direction:column;gap:14px;">
+      <!-- Answering pill -->
+      <div id="tbAnsweringPill" style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:20px;border:1.5px solid;font-size:.82rem;font-weight:700;justify-content:center;"></div>
+      <!-- Timer -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+        <div class="timer-ring" id="tbTimerRing" style="width:60px;height:60px;">
+          <svg width="60" height="60" viewBox="0 0 60 60">
+            <circle class="bg-c" cx="30" cy="30" r="25"/>
+            <circle class="prog-c" id="tbTimerArc" cx="30" cy="30" r="25" style="stroke-dasharray:157;stroke-dashoffset:0;"/>
+          </svg>
+          <div class="timer-num" id="tbTimerNum" style="font-size:1.2rem;">20</div>
+        </div>
+        <div id="tbTimerLbl" style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;"></div>
+      </div>
+      <!-- Question text -->
+      <div id="tbQText" style="font-family:'Tiro Devanagari Hindi',serif;font-size:clamp(1rem,3vw,1.35rem);line-height:1.75;color:var(--text);text-align:center;padding:16px 14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;min-height:70px;"></div>
+      <!-- Answer box (hidden) -->
+      <div id="tbAnsBox" style="display:none;background:rgba(46,204,113,.09);border:1px solid rgba(46,204,113,.38);border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:.68rem;color:var(--easy);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:4px;">✓ Correct Answer</div>
+        <div id="tbAnsText" style="font-family:'Tiro Devanagari Hindi',serif;font-size:1.1rem;color:#7EE8A2;font-weight:600;"></div>
+      </div>
+      <!-- Buttons -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn-action btn-correct" id="tbBtnCorrect" onclick="tbMarkCorrect()">✔ Correct</button>
+        <button class="btn-action btn-wrong"   id="tbBtnWrong"   onclick="tbMarkWrong()">✘ Wrong</button>
+        <button class="btn-action btn-reveal"  id="tbBtnReveal"  onclick="tbRevealAnswer()">👁 Reveal Answer</button>
+        <button class="btn-action btn-pass"    id="tbBtnPass"    onclick="tbPassQuestion()">→ Pass</button>
+      </div>
+    </div>
+
+    <!-- Results table (shown after all questions) -->
+    <div id="tbResultsBox" style="display:none;width:100%;flex-direction:column;gap:12px;">
+      <div id="tbResultsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <button onclick="finalizeTiebreaker()" class="btn-start" style="margin-top:8px;padding:12px 32px;font-size:.95rem;">🏆 Reveal Final Results →</button>
+    </div>
   </div>
 </div>
 
@@ -900,11 +973,18 @@ const QUESTIONS = [
 ];
 
 // Round config: how many questions each round has
-const ROUND_CONFIG = [
-  {name:'Easy',   cls:'easy',   count:30, offset:0,  label:'Easy Round • Questions 1–30'},
-  {name:'Medium', cls:'medium', count:30, offset:30, label:'Medium Round • Questions 31–60'},
-  {name:'Hard',   cls:'hard',   count:18, offset:60, label:'Hard Round • Questions 61–78'},
-];
+// Round names — editable via Settings
+let ROUND_NAMES = ['Easy', 'Medium', 'Hard'];
+
+function getRoundConfig(){
+  return [
+    {name:ROUND_NAMES[0], cls:'easy',   count:30, offset:0,  label:`${ROUND_NAMES[0]} Round • Questions 1–30`},
+    {name:ROUND_NAMES[1], cls:'medium', count:30, offset:30, label:`${ROUND_NAMES[1]} Round • Questions 31–60`},
+    {name:ROUND_NAMES[2], cls:'hard',   count:18, offset:60, label:`${ROUND_NAMES[2]} Round • Questions 61–78`},
+  ];
+}
+// Keep ROUND_CONFIG as a computed property for backward compat
+Object.defineProperty(window, 'ROUND_CONFIG', { get: getRoundConfig });
 
 const TOTAL_Q = 78;
 
@@ -1137,7 +1217,17 @@ function renderTurnBox(announce=false){
     </div>`;
   });
 
-  if(announce) speak(`${teams[currentTurnIdx]}, pick a number.`);
+  if(announce){
+    // Check if all questions in the current round are already answered
+    const rc = ROUND_CONFIG[curRound];
+    const allDone = Array.from({length: rc.count}, (_,i) => qSt[rc.offset + i])
+                        .every(q => q && q.status === 'answered');
+    if(allDone){
+      speak(`All questions in this round are complete. Let's move to another round!`);
+    } else {
+      speak(`${teams[currentTurnIdx]}, pick a number.`);
+    }
+  }
 }
 
 function nextTurn(){
@@ -1445,10 +1535,11 @@ if(window.speechSynthesis){
 }
 
 // ── ElevenLabs TTS ──
+// Note: uses the non-streaming endpoint — the /stream endpoint blocks browser fetch() with CORS errors.
 async function speakElevenLabs(text, stability=0.5, similarityBoost=0.75, style=0.0, onDone){
   if(!ttsEnabled || !elevenLabsKey){ speakBrowser(text, 0.9, 0.85, onDone); return; }
   try{
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}/stream`, {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}`, {
       method: 'POST',
       headers: {
         'xi-api-key': elevenLabsKey,
@@ -1461,14 +1552,21 @@ async function speakElevenLabs(text, stability=0.5, similarityBoost=0.75, style=
         voice_settings: { stability, similarity_boost: similarityBoost, style, use_speaker_boost: true }
       })
     });
-    if(!res.ok){ console.warn('ElevenLabs error:', res.status); speakBrowser(text, 0.9, 0.85, onDone); return; }
+    if(!res.ok){
+      console.warn('ElevenLabs error:', res.status);
+      speakBrowser(text, 0.9, 0.85, onDone);
+      return;
+    }
     const blob  = await res.blob();
     const url   = URL.createObjectURL(blob);
     const audio = new Audio(url);
     audio.onended = () => { URL.revokeObjectURL(url); if(onDone) onDone(); };
     audio.onerror = () => { URL.revokeObjectURL(url); if(onDone) onDone(); };
-    audio.play();
-  } catch(e){ console.warn('ElevenLabs fetch failed:', e); speakBrowser(text, 0.9, 0.85, onDone); }
+    audio.play().catch(() => { URL.revokeObjectURL(url); speakBrowser(text, 0.9, 0.85, onDone); });
+  } catch(e){
+    console.warn('ElevenLabs fetch failed:', e);
+    speakBrowser(text, 0.9, 0.85, onDone);
+  }
 }
 
 // ── Browser TTS fallback ──
@@ -1752,36 +1850,393 @@ function cancelEnd(){
 function endQuiz(){
   document.getElementById('confirmOverlay').classList.remove('open');
   quizEnded = true;
-  clearSave(); // quiz is done — no need to resume
-  launchDramaticReveal();
+  clearSave();
+  launchDramaticReveal(null, null);
 }
 
 // ── TIEBREAKER commentary (overlay removed — handled inline in position buttons) ──
 // Speaks the tiebreaker announcement and calls callback when done
-function announceTiebreaker(tiedTeams, pts, callback){
-  const names = tiedTeams.map(t => t.name).join(' and ');
-  const msg = `We have a tie! Both ${names} have scored ${pts} points each. But there can only be one winner. The host will now ask a final one-on-one question. I now hand the mic to the host.`;
-  speakAndWait(msg, callback);
+
+// ===================== TIEBREAKER MINI-QUIZ =====================
+// Rules:
+// - Questions are NOT shown on screen (host has printed questions)
+// - Follows normal pass pattern: first team gets 20s, on wrong/timeout it passes to next, 10s each pass
+// - Even pattern: a "round" = one question per tied team. After each full round, check if scores differ.
+//   Only declare a winner at the END of a full round (all tied teams have had equal attempts).
+// - If still tied after a round, start a new round of questions.
+
+let tbTiedTeams      = [];   // [{name, color, idx, total}]
+let tbScores         = {};   // {teamIdx: tiebreaker points}
+let tbQuestionNum    = 0;    // overall question counter (for display: Question 1, 2, 3…)
+let tbRoundNum       = 0;    // which even-round we're in (0-based)
+let tbCurrentTeamPos = 0;    // position within tbTiedTeams for current question's FIRST answerer
+let tbPassChain      = [];   // team indices who have already tried this question in this pass cycle
+let tbAnsweringPos   = 0;    // current answerer's position within tbTiedTeams (during pass)
+let tbTimerTick2     = null;
+let tbTimerSec2      = 20;
+let tbTbRevealed     = false;
+let tbTbPassing      = false;
+const TB_CIRC        = 157;  // 2π×25
+
+// Called when tiebreaker is detected
+function launchTiebreakerQuiz(tiedTeamsList, maxPts){
+  tbTiedTeams      = tiedTeamsList;
+  tbScores         = {};
+  tbTiedTeams.forEach(t => tbScores[t.idx] = 0);
+  tbQuestionNum    = 0;
+  tbRoundNum       = 0;
+  tbCurrentTeamPos = 0;
+  tbPassChain      = [];
+  tbAnsweringPos   = 0;
+  tbTbRevealed     = false;
+  tbTbPassing      = false;
+
+  showScreen('tiebreakerScreen');
+
+  const names = tbTiedTeams.map(t=>t.name).join(', ');
+  document.getElementById('tbIntroText').textContent =
+    `${names} are tied. Each team will answer one question per round. The team with the highest score after a complete round wins!`;
+
+  buildTbScoreStrip();
+
+  const msg = `We have a tie between ${names}! The tiebreaker begins now. Each team will answer one question per round. Scores are checked after every full round!`;
+  speakAndWait(msg, ()=>{ setTimeout(loadNextTbQuestion, 800); });
+}
+
+function buildTbScoreStrip(){
+  const strip = document.getElementById('tbScoreStrip');
+  strip.innerHTML = '';
+  tbTiedTeams.forEach(t => {
+    strip.innerHTML += `<div style="background:${t.color}18;border:2px solid ${t.color}60;border-radius:10px;padding:8px 16px;text-align:center;min-width:100px;">
+      <div style="font-size:.7rem;color:${t.color};font-weight:700;">${t.name}</div>
+      <div id="tbchip_${t.idx}" style="font-size:1.4rem;font-weight:800;color:var(--gold);">0</div>
+    </div>`;
+  });
+}
+
+function refreshTbScores(){
+  tbTiedTeams.forEach(t => {
+    const el = document.getElementById(`tbchip_${t.idx}`);
+    if(el) el.textContent = tbScores[t.idx];
+  });
+}
+
+function loadNextTbQuestion(){
+  tbTbRevealed = false;
+  tbTbPassing  = false;
+  // Pass chain starts with just the designated first answerer for this question
+  tbAnsweringPos = tbCurrentTeamPos;
+  tbPassChain    = [tbTiedTeams[tbCurrentTeamPos].idx];
+
+  const team = tbTiedTeams[tbCurrentTeamPos];
+
+  // Update round info — show question number and whose turn it is (NO question text)
+  document.getElementById('tbRoundInfo').textContent =
+    `Round ${tbRoundNum + 1} • Question ${tbQuestionNum + 1} • ${team.name} answers first`;
+
+  // Show question box
+  const qbox = document.getElementById('tbQuestionBox');
+  qbox.style.display = 'flex';
+  document.getElementById('tbResultsBox').style.display = 'none';
+
+  // Answering pill
+  updateTbAnsweringPill();
+
+  // Hide answer box, re-enable buttons
+  document.getElementById('tbAnsBox').style.display = 'none';
+  document.getElementById('tbBtnCorrect').disabled = false;
+  document.getElementById('tbBtnWrong').disabled   = false;
+  document.getElementById('tbBtnReveal').disabled  = false;
+  document.getElementById('tbBtnPass').disabled    = false;
+
+  // Show "Question N" label — NO question text shown on screen
+  document.getElementById('tbQText').textContent = `Question ${tbQuestionNum + 1}`;
+  document.getElementById('tbAnsText').textContent = '';
+
+  // Update pass button label
+  updateTbPassBtn();
+
+  // Announce
+  speak(`Question ${tbQuestionNum + 1}. ${team.name}, your turn.`);
+  setTimeout(()=> startTbTimer(20), 2000);
+}
+
+function updateTbAnsweringPill(){
+  const team = tbTiedTeams[tbAnsweringPos];
+  const pill = document.getElementById('tbAnsweringPill');
+  pill.style.borderColor = team.color;
+  pill.style.color       = team.color;
+  pill.style.background  = team.color + '15';
+  pill.textContent       = `🎤 ${team.name} is answering`;
+}
+
+function updateTbPassBtn(){
+  const btn = document.getElementById('tbBtnPass');
+  if(!btn) return;
+  // Find next team not yet in pass chain
+  const next = getNextTbPassTeam();
+  if(next === null){
+    btn.disabled = true;
+    btn.textContent = '→ Pass';
+  } else {
+    btn.disabled = false;
+    btn.textContent = `→ Pass to ${next.name}`;
+  }
+}
+
+function getNextTbPassTeam(){
+  // Returns the next tbTiedTeams entry not yet in tbPassChain
+  for(let i = 0; i < tbTiedTeams.length; i++){
+    const pos = (tbAnsweringPos + 1 + i) % tbTiedTeams.length;
+    if(!tbPassChain.includes(tbTiedTeams[pos].idx)) return tbTiedTeams[pos];
+  }
+  return null; // all teams tried
+}
+
+function startTbTimer(sec){
+  stopTbTimer();
+  tbTimerSec2 = sec;
+  renderTbTimer();
+  startClockTicking();
+  tbTimerTick2 = setInterval(()=>{
+    tbTimerSec2--;
+    renderTbTimer();
+    if(tbTimerSec2 <= 0){
+      stopTbTimer();
+      playBuzzer();
+      if(!tbTbRevealed && !tbTbPassing){
+        tbTbPassing = true;
+        // Auto-pass on timeout
+        const next = getNextTbPassTeam();
+        if(next !== null){
+          speak(`Time's up. Pass to ${next.name}.`);
+          setTimeout(()=> doTbPass(), 1500);
+        } else {
+          speak(`Time's up. No more teams to pass to.`);
+          setTimeout(()=> completeTbQuestion(false), 1500);
+        }
+      }
+    }
+  }, 1000);
+}
+
+function stopTbTimer(){
+  clearInterval(tbTimerTick2);
+  tbTimerTick2 = null;
+  stopClockTicking();
+}
+
+function renderTbTimer(){
+  const arc  = document.getElementById('tbTimerArc');
+  const num  = document.getElementById('tbTimerNum');
+  const ring = document.getElementById('tbTimerRing');
+  const lbl  = document.getElementById('tbTimerLbl');
+  const s = Math.max(0, tbTimerSec2);
+  num.textContent = s;
+  lbl.textContent = tbPassChain.length > 1 ? 'seconds (pass)' : 'seconds (1st)';
+  arc.style.strokeDashoffset = TB_CIRC * (1 - s / (tbPassChain.length > 1 ? 10 : 20));
+  ring.classList.remove('warn','danger');
+  if(s<=4) ring.classList.add('danger');
+  else if(s<=8) ring.classList.add('warn');
+}
+
+// Manual pass button pressed
+function tbPassQuestion(){
+  if(tbTbRevealed || tbTbPassing) return;
+  stopTbTimer();
+  const next = getNextTbPassTeam();
+  if(next === null){ completeTbQuestion(false); return; }
+  speak(`Pass to ${next.name}.`);
+  doTbPass();
+}
+
+function doTbPass(){
+  // Find and move to next team
+  for(let i = 0; i < tbTiedTeams.length; i++){
+    const pos = (tbAnsweringPos + 1 + i) % tbTiedTeams.length;
+    if(!tbPassChain.includes(tbTiedTeams[pos].idx)){
+      tbAnsweringPos = pos;
+      tbPassChain.push(tbTiedTeams[pos].idx);
+      break;
+    }
+  }
+  updateTbAnsweringPill();
+  updateTbPassBtn();
+  document.getElementById('tbBtnCorrect').disabled = false;
+  document.getElementById('tbBtnWrong').disabled   = false;
+  document.getElementById('tbBtnReveal').disabled  = false;
+  tbTbPassing = false;
+  setTimeout(()=> startTbTimer(10), 1500);
+}
+
+function tbMarkCorrect(){
+  if(tbTbRevealed) return;
+  stopTbTimer();
+  playCelebration();
+  const team = tbTiedTeams[tbAnsweringPos];
+  const pts  = tbPassChain.length > 1 ? 5 : 10;
+  tbScores[team.idx] += pts;
+  refreshTbScores();
+  document.getElementById('tbBtnCorrect').disabled = true;
+  document.getElementById('tbBtnWrong').disabled   = true;
+  document.getElementById('tbBtnReveal').disabled  = true;
+  document.getElementById('tbBtnPass').disabled    = true;
+  const msg = `Correct! ${pts} points to ${team.name}.`;
+  speakAndWait(msg, ()=>{ setTimeout(()=> completeTbQuestion(true), 1200); });
+}
+
+function tbMarkWrong(){
+  if(tbTbRevealed) return;
+  stopTbTimer();
+  playWrongSound();
+  const next = getNextTbPassTeam();
+  if(next !== null){
+    speak(`Wrong. Pass to ${next.name}.`);
+    setTimeout(()=>{ tbTbPassing = false; doTbPass(); }, 1500);
+  } else {
+    speak(`Wrong.`);
+    setTimeout(()=> completeTbQuestion(false), 1500);
+  }
+}
+
+function tbRevealAnswer(){
+  if(tbTbRevealed) return;
+  tbTbRevealed = true;
+  stopTbTimer();
+  // No answer text to show (host has printed questions), just show a placeholder
+  document.getElementById('tbAnsBox').style.display = 'block';
+  document.getElementById('tbAnsText').textContent = '(Host reads answer from printed sheet)';
+  document.getElementById('tbBtnCorrect').disabled = false; // still allow awarding after reveal
+  document.getElementById('tbBtnWrong').disabled   = false;
+  document.getElementById('tbBtnReveal').disabled  = true;
+  document.getElementById('tbBtnPass').disabled    = true;
+}
+
+// Called when a question is fully done (answered or all teams passed/wrong)
+function completeTbQuestion(wasCorrect){
+  tbQuestionNum++;
+  // Move to next team as the first answerer
+  tbCurrentTeamPos = (tbCurrentTeamPos + 1) % tbTiedTeams.length;
+
+  // Check if we have completed a full round (all tied teams have had a question as first answerer)
+  // A round completes every tbTiedTeams.length questions
+  const questionsPerRound = tbTiedTeams.length;
+  if(tbQuestionNum % questionsPerRound === 0){
+    // End of a full round — check if scores are no longer tied
+    const scoreValues = tbTiedTeams.map(t => tbScores[t.idx]);
+    const maxTb = Math.max(...scoreValues);
+    const leadersCount = scoreValues.filter(s => s === maxTb).length;
+    if(leadersCount === 1){
+      // Clear winner — proceed to results
+      showTbResults();
+      return;
+    } else {
+      // Still tied — announce and continue
+      tbRoundNum++;
+      const stillTiedNames = tbTiedTeams.filter(t => tbScores[t.idx] === maxTb).map(t=>t.name).join(' and ');
+      speak(`End of round ${tbRoundNum}. ${stillTiedNames} are still tied! Starting round ${tbRoundNum + 1}.`);
+      setTimeout(loadNextTbQuestion, 3000);
+      return;
+    }
+  }
+
+  // Mid-round — just load next question
+  loadNextTbQuestion();
+}
+
+function showTbResults(){
+  stopTbTimer();
+  document.getElementById('tbQuestionBox').style.display = 'none';
+  const resultsBox = document.getElementById('tbResultsBox');
+  resultsBox.style.display = 'flex';
+
+  // Sort by score
+  const ranked = [...tbTiedTeams].sort((a,b) => tbScores[b.idx] - tbScores[a.idx]);
+  const topScore = tbScores[ranked[0].idx];
+  const stillTied = ranked.filter(t => tbScores[t.idx] === topScore).length > 1;
+
+  const list = document.getElementById('tbResultsList');
+  list.innerHTML = '';
+  const medals = ['🥇','🥈','🥉','4️⃣'];
+  ranked.forEach((t, i) => {
+    list.innerHTML += `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 16px;border-left:4px solid ${t.color};">
+      <div style="font-size:1.3rem;">${medals[i]}</div>
+      <div style="flex:1;font-weight:700;color:${t.color};">${t.name}</div>
+      <div style="font-size:1.3rem;font-weight:800;color:var(--gold);">${tbScores[t.idx]} pts</div>
+    </div>`;
+  });
+
+  if(stillTied){
+    document.getElementById('tbRoundInfo').textContent = '⚡ Still tied! Host decides the winner.';
+    document.getElementById('tbRoundInfo').style.borderColor = 'rgba(231,76,60,.5)';
+    // Add winner buttons for still-tied teams
+    const tiedStill = ranked.filter(t => tbScores[t.idx] === topScore);
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;';
+    tiedStill.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'btn-action btn-correct';
+      b.textContent = `👑 ${t.name} Wins`;
+      b.onclick = () => {
+        document.querySelectorAll('#tbResultsBox button').forEach(x=>x.disabled=true);
+        declareTbWinner(t, ranked);
+      };
+      btnRow.appendChild(b);
+    });
+    list.appendChild(btnRow);
+    // Hide the "Reveal Final Results" button — host must pick winner first
+    resultsBox.querySelector('.btn-start').style.display = 'none';
+    speak(`Still a tie! The host will now decide the winner.`);
+  } else {
+    document.getElementById('tbRoundInfo').textContent = `🏆 ${ranked[0].name} wins the tiebreaker!`;
+    speak(`The tiebreaker is complete. ${ranked[0].name} wins!`);
+    // Store winner for finalization
+    window._tbWinner = ranked[0];
+    window._tbRanked = ranked;
+  }
+}
+
+function declareTbWinner(winner, ranked){
+  window._tbWinner = winner;
+  // Put winner first, rest in order
+  const rest = ranked.filter(t => t.idx !== winner.idx);
+  window._tbRanked = [winner, ...rest];
+  document.getElementById('tbResultsBox').querySelector('.btn-start').style.display = '';
+  document.getElementById('tbRoundInfo').textContent = `🏆 ${winner.name} is the winner!`;
+  speak(`${winner.name} is declared the winner of the tiebreaker!`);
+}
+
+function finalizeTiebreaker(){
+  // Now launch the position-button reveal with tiebreaker winner baked in
+  launchDramaticReveal(window._tbWinner, window._tbRanked || [window._tbWinner]);
 }
 
 // ── DRAMATIC REVEAL — Host-controlled position buttons ──
 let revealSorted  = [];
-let tiedRevealTeams = []; // the two tied teams shown in scoreboard
+let tiedRevealTeams = [];
 
-function launchDramaticReveal(){
+function launchDramaticReveal(tbWinner, tbRanked){
+  // tbWinner: tiebreaker winner team obj (null if no tie)
+  // tbRanked: tiebreaker ranking (null if no tie)
   showScreen('scoresScreen');
   document.getElementById('backBtn').style.display = 'none';
   document.getElementById('revealCards').style.display = 'none';
   document.getElementById('endQuizPanel').style.display = 'flex';
   document.getElementById('endRevealList').innerHTML = '';
-  document.getElementById('scoresSub').textContent = 'Host: click a position button to reveal that team';
+  document.getElementById('scoresSub').textContent = 'Host: click a position button to reveal each team';
 
   const totals    = teams.map((_,i) => scores[i].reduce((a,b)=>a+b,0));
   const maxPts    = Math.max(...totals);
-  const tiedAtTop = teams.filter((_,i) => totals[i] === maxPts).length > 1;
+  const tiedAtTop = !tbWinner && teams.filter((_,i) => totals[i] === maxPts).length > 1;
 
   let allTeams = teams.map((name,i) => ({name, total:totals[i], color:TEAM_COLORS[i], idx:i}));
-  if(tiedAtTop){
+
+  if(tbWinner){
+    // Tiebreaker already resolved — place winner at top, others in score order
+    const nonTb    = allTeams.filter(t => !tbRanked.find(r=>r.idx===t.idx)).sort((a,b)=>a.total-b.total);
+    const tbOthers = tbRanked.filter(t=>t.idx!==tbWinner.idx);
+    revealSorted   = [...nonTb, ...tbOthers, tbWinner];
+  } else if(tiedAtTop){
     const nonTied = allTeams.filter(t => t.total < maxPts).sort((a,b) => a.total - b.total);
     const tied    = allTeams.filter(t => t.total === maxPts);
     revealSorted    = [...nonTied, ...tied];
@@ -1791,26 +2246,25 @@ function launchDramaticReveal(){
     tiedRevealTeams = [];
   }
 
-  buildPositionButtons(tiedAtTop, maxPts);
+  buildPositionButtons(tiedAtTop, maxPts, !!tbWinner);
 }
 
-function buildPositionButtons(tiedAtTop, maxPts){
+function buildPositionButtons(tiedAtTop, maxPts, tbResolved){
   const container = document.getElementById('positionBtns');
   container.innerHTML = '';
   const n        = revealSorted.length;
   const ordinals = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
 
-  // Build buttons lowest→highest (last place first, winner last)
-  // In tie case: instead of "Reveal 1st" + "Reveal 2nd", show "⚡ Tiebreaker" x2
   for(let rank = n; rank >= 1; rank--){
     const btn   = document.createElement('button');
-    const isTiedSlot = tiedAtTop && (rank === 1 || rank === 2);
+    // Tiebreaker slots only if tie exists AND not yet resolved by mini-quiz
+    const tiedCount = tiedRevealTeams.length;
+    const isTiedSlot = tiedAtTop && !tbResolved && rank <= tiedCount;
 
     let label, cls;
     if(isTiedSlot){
       label = '⚡ Tiebreaker';
       cls   = 'pos-btn other-btn';
-      // Style with orange tiebreaker colour
       btn.style.borderColor = 'rgba(230,126,34,.6)';
       btn.style.color       = 'var(--medium)';
       btn.style.background  = 'rgba(230,126,34,.08)';
@@ -1833,29 +2287,26 @@ function buildPositionButtons(tiedAtTop, maxPts){
       btn.disabled = true;
 
       if(isTiedSlot){
-        // Both tiebreaker slots work together —
-        // when EITHER is clicked, reveal that team as "Tiebreaker" in the list
-        // and when BOTH have been clicked, fire the tiebreaker announcement
-        const tbBtn1 = document.getElementById('posBtn1');
-        const tbBtn2 = document.getElementById('posBtn2');
-        const pos    = n - rank;
-        const team   = revealSorted[pos];
+        const pos  = n - rank;
+        const team = revealSorted[pos];
         appendTiebreakerRow(team);
-
-        // Check if both tiebreaker buttons have now been clicked
-        const both = tbBtn1 && tbBtn1.disabled && tbBtn2 && tbBtn2.disabled;
-        if(both){
-          // Both revealed — announce tiebreaker and show "Click for Winner" buttons
+        // Check if all tiebreaker buttons clicked
+        const allTbClicked = tiedRevealTeams.every((_,ri) => {
+          const b = document.getElementById(`posBtn${ri+1}`);
+          return b && b.disabled;
+        });
+        if(allTbClicked){
           setTimeout(()=>{
-            announceTiebreaker(tiedRevealTeams, maxPts, ()=>{
-              showClickForWinner(tiedRevealTeams);
+            // Launch tiebreaker mini-quiz instead of old host-decides
+            const msg = `We have a tie between ${tiedRevealTeams.map(t=>t.name).join(' and ')}! Starting the tiebreaker round now.`;
+            speakAndWait(msg, ()=>{
+              setTimeout(()=> launchTiebreakerQuiz(tiedRevealTeams, maxPts), 500);
             });
           }, 800);
         }
         return;
       }
 
-      // Normal position reveal
       appendRevealRow(revealSorted[n - rank], rank, rank === 1);
     };
 
@@ -1863,7 +2314,7 @@ function buildPositionButtons(tiedAtTop, maxPts){
   }
 }
 
-// Append a "Tiebreaker" styled row (before winner is decided)
+// Append a "Tiebreaker" styled row
 function appendTiebreakerRow(team){
   const list = document.getElementById('endRevealList');
   const row  = document.createElement('div');
@@ -1874,76 +2325,30 @@ function appendTiebreakerRow(team){
     <div style="flex:1">
       <div style="font-weight:700;color:${team.color};font-size:.95rem;">${team.name}</div>
       <div class="tr-badge">TIEBREAKER • ${team.total} pts</div>
-    </div>
-    <div id="tbwinner_${team.idx}"></div>`;
+    </div>`;
   list.appendChild(row);
-  requestAnimationFrame(()=>{
-    setTimeout(()=>{ row.classList.add('visible'); }, 30);
-  });
-}
-
-// After both tiebreaker rows revealed — show "Click for Winner" buttons inside each row
-function showClickForWinner(tiedTeams){
-  tiedTeams.forEach(team => {
-    const slot = document.getElementById(`tbwinner_${team.idx}`);
-    if(!slot) return;
-    const btn = document.createElement('button');
-    btn.className   = 'btn-click-winner';
-    btn.textContent = '👑 Click for Winner';
-    btn.onclick     = () => {
-      // Disable all "Click for Winner" buttons immediately
-      document.querySelectorAll('.btn-click-winner').forEach(b => b.disabled = true);
-      const winner = team;
-      const loser  = tiedTeams.find(t => t.idx !== winner.idx);
-      // Upgrade winner row — pass loser as callback so 2nd place only speaks AFTER winner speech finishes
-      upgradeTiebreakerRow(winner, 1, ()=>{
-        // 1.5s pause after winner speech, then announce 2nd place
-        setTimeout(()=> upgradeTiebreakerRow(loser, 2), 1500);
-      });
-    };
-    slot.appendChild(btn);
-  });
+  requestAnimationFrame(()=>{ setTimeout(()=>{ row.classList.add('visible'); }, 30); });
 }
 
 // Upgrade a tiebreaker row to winner or 2nd place
 function upgradeTiebreakerRow(team, rank, onDone){
-  const row = document.getElementById(`tbrow_${team.idx}`);
-
-  if(rank === 1){
-    row.style.background   = 'rgba(245,200,66,.1)';
-    row.style.borderColor  = 'rgba(245,200,66,.5)';
-    row.innerHTML = `
-      <div class="er-rank">🥇</div>
-      <div class="er-name" style="color:${team.color};font-weight:700;font-size:.95rem;">${team.name}</div>
-      <div style="text-align:right">
-        <div class="er-pts" style="font-size:1.4rem;font-weight:800;color:var(--gold)">${team.total}</div>
-        <div class="er-badge" style="color:var(--gold)">🏆 WINNER</div>
-      </div>`;
-    playCrowdCelebration();
-    const msg = `And the winner is... ${team.name}! With ${team.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
-    // Only call onDone AFTER speech fully finishes
-    speakExcited(msg, ()=>{
-      setTimeout(playCrowdCelebration, 400);
-      if(onDone) onDone();
-    });
+  // Re-use appendRevealRow logic — remove old tb row and add proper reveal row
+  const old = document.getElementById(`tbrow_${team.idx}`);
+  if(old) old.remove();
+  appendRevealRow(team, rank, rank===1);
+  // appendRevealRow handles commentary; if onDone needed, call after speech
+  if(rank===1){
+    // speakExcited already fires inside appendRevealRow; attach onDone via timeout
+    const approxDuration = 6000;
+    setTimeout(()=>{ if(onDone) onDone(); }, approxDuration);
   } else {
-    row.style.background   = 'rgba(192,192,192,.06)';
-    row.style.borderColor  = 'rgba(192,192,192,.4)';
-    row.innerHTML = `
-      <div class="er-rank">🥈</div>
-      <div class="er-name" style="color:${team.color};font-weight:700;font-size:.95rem;">${team.name}</div>
-      <div style="text-align:right">
-        <div class="er-pts" style="font-size:1.4rem;font-weight:800;color:var(--gold)">${team.total}</div>
-        <div class="er-badge" style="color:#C0C0C0">🥈 2nd Place</div>
-      </div>`;
-    speakAndWait(`Congratulations ${team.name} in securing 2nd position with ${team.total} points!`,
-      onDone ? ()=>{ if(onDone) onDone(); } : null);
+    if(onDone) setTimeout(onDone, 3000);
   }
 }
 
 // Append a normal position row
 function appendRevealRow(team, rank, isWinner){
-  const list     = document.getElementById('endRevealList');
+  const list = document.getElementById('endRevealList');
   const medals   = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
   const ordinalsFull = ['','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
 
@@ -1966,7 +2371,6 @@ function appendRevealRow(team, rank, isWinner){
   });
 
   if(isWinner){
-    // Start crowd softly AFTER speech finishes so it doesn't drown commentary
     const msg = `And the winner is... ${team.name}! With ${team.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
     speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 200); });
   } else if(rank === 2){
@@ -2070,6 +2474,7 @@ function openSettingsFromHome(){
   const currentTitle = document.getElementById('homeTitleEl').textContent;
   document.getElementById('titleInput').value = currentTitle;
   syncVoiceSettingsUI();
+  syncRoundNamesUI();
   initTeamSettingsUI();
   showScreen('settingsScreen');
   resetSettingsUI();
@@ -2080,6 +2485,7 @@ function openSettingsFromQuiz(){
   const currentTitle = document.getElementById('homeTitleEl').textContent;
   document.getElementById('titleInput').value = currentTitle;
   syncVoiceSettingsUI();
+  syncRoundNamesUI();
   initTeamSettingsUI();
   showScreen('settingsScreen');
   resetSettingsUI();
@@ -2121,6 +2527,39 @@ function testVoice(){
     if(v) elevenLabsVoiceId = v;
   } catch(e){}
 })();
+
+function applyRoundNames(){
+  const n0 = document.getElementById('roundName0').value.trim() || 'Easy';
+  const n1 = document.getElementById('roundName1').value.trim() || 'Medium';
+  const n2 = document.getElementById('roundName2').value.trim() || 'Hard';
+  ROUND_NAMES[0] = n0; ROUND_NAMES[1] = n1; ROUND_NAMES[2] = n2;
+  // Update round tabs in quiz header
+  const tabs = document.querySelectorAll('.round-tab');
+  if(tabs[0]) tabs[0].textContent = `${n0} (1–30)`;
+  if(tabs[1]) tabs[1].textContent = `${n1} (31–60)`;
+  if(tabs[2]) tabs[2].textContent = `${n2} (61–78)`;
+  // Update settings round selector buttons
+  const sBtn0 = document.getElementById('sBtn0');
+  const sBtn1 = document.getElementById('sBtn1');
+  const sBtn2 = document.getElementById('sBtn2');
+  if(sBtn0) sBtn0.textContent = `${n0} (Q1–30)`;
+  if(sBtn1) sBtn1.textContent = `${n1} (Q31–60)`;
+  if(sBtn2) sBtn2.textContent = `${n2} (Q61–78)`;
+  // Re-render grid label if quiz is running
+  if(teams.length) renderGrid();
+  const msg = document.getElementById('roundNamesMsg');
+  msg.style.display = 'inline';
+  setTimeout(()=> msg.style.display='none', 2500);
+}
+
+function syncRoundNamesUI(){
+  const i0 = document.getElementById('roundName0');
+  const i1 = document.getElementById('roundName1');
+  const i2 = document.getElementById('roundName2');
+  if(i0) i0.value = ROUND_NAMES[0];
+  if(i1) i1.value = ROUND_NAMES[1];
+  if(i2) i2.value = ROUND_NAMES[2];
+}
 
 function applyTitle(){
   const val = document.getElementById('titleInput').value.trim();
