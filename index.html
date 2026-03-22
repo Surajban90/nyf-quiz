@@ -1315,7 +1315,7 @@ function revealAnswer(){
 }
 
 // ===================== PASS =====================
-function passQuestion(){
+function passQuestion(skipSpeak=false){
   if(curQ===null||revealed) return;
   qSt[curQ].status='passed';
   qSt[curQ].passCnt++;
@@ -1326,7 +1326,7 @@ function passQuestion(){
   buildAwardGrid();
   renderGrid();
   saveState();
-  speak(`Pass to ${teams[answeringTeamIdx]}.`);
+  if(!skipSpeak) speak(`Pass to ${teams[answeringTeamIdx]}.`);
   setTimeout(()=> startTimer(10), 1500);
 }
 
@@ -1736,8 +1736,9 @@ function markWrong(){
   stopTimer();
   playWrongSound();
   const nextIdx = (answeringTeamIdx+1) % teams.length;
+  // Speak ONCE here — then pass silently (skipSpeak=true)
   speak(`Wrong. Pass to ${teams[nextIdx]}.`);
-  passQuestion();
+  passQuestion(true);
 }
 
 // ===================== END QUIZ =====================
@@ -1894,20 +1895,19 @@ function showClickForWinner(tiedTeams){
       document.querySelectorAll('.btn-click-winner').forEach(b => b.disabled = true);
       const winner = team;
       const loser  = tiedTeams.find(t => t.idx !== winner.idx);
-      // Upgrade winner row → winner
-      upgradeTiebreakerRow(winner, 1);
-      // Upgrade loser row  → 2nd place
-      setTimeout(()=> upgradeTiebreakerRow(loser, 2), 1800);
+      // Upgrade winner row — pass loser as callback so 2nd place only speaks AFTER winner speech finishes
+      upgradeTiebreakerRow(winner, 1, ()=>{
+        // 1.5s pause after winner speech, then announce 2nd place
+        setTimeout(()=> upgradeTiebreakerRow(loser, 2), 1500);
+      });
     };
     slot.appendChild(btn);
   });
 }
 
 // Upgrade a tiebreaker row to winner or 2nd place
-function upgradeTiebreakerRow(team, rank){
+function upgradeTiebreakerRow(team, rank, onDone){
   const row = document.getElementById(`tbrow_${team.idx}`);
-  const medals = ['🥇','🥈'];
-  const ordinalsFull = ['','1st','2nd'];
 
   if(rank === 1){
     row.style.background   = 'rgba(245,200,66,.1)';
@@ -1921,7 +1921,11 @@ function upgradeTiebreakerRow(team, rank){
       </div>`;
     playCrowdCelebration();
     const msg = `And the winner is... ${team.name}! With ${team.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
-    speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 400); });
+    // Only call onDone AFTER speech fully finishes
+    speakExcited(msg, ()=>{
+      setTimeout(playCrowdCelebration, 400);
+      if(onDone) onDone();
+    });
   } else {
     row.style.background   = 'rgba(192,192,192,.06)';
     row.style.borderColor  = 'rgba(192,192,192,.4)';
@@ -1932,7 +1936,8 @@ function upgradeTiebreakerRow(team, rank){
         <div class="er-pts" style="font-size:1.4rem;font-weight:800;color:var(--gold)">${team.total}</div>
         <div class="er-badge" style="color:#C0C0C0">🥈 2nd Place</div>
       </div>`;
-    speakAndWait(`Congratulations ${team.name} in securing 2nd position with ${team.total} points!`, null);
+    speakAndWait(`Congratulations ${team.name} in securing 2nd position with ${team.total} points!`,
+      onDone ? ()=>{ if(onDone) onDone(); } : null);
   }
 }
 
@@ -1961,9 +1966,9 @@ function appendRevealRow(team, rank, isWinner){
   });
 
   if(isWinner){
-    playCrowdCelebration();
+    // Start crowd softly AFTER speech finishes so it doesn't drown commentary
     const msg = `And the winner is... ${team.name}! With ${team.total} points! Congratulations! Hip Hip Hurray! Hip Hip Hurray!`;
-    speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 400); });
+    speakExcited(msg, ()=>{ setTimeout(playCrowdCelebration, 200); });
   } else if(rank === 2){
     speakAndWait(`Congratulations ${team.name} in securing 2nd position with ${team.total} points!`, null);
   } else {
@@ -2005,8 +2010,8 @@ function playCrowdCelebration(){
       const st = now + b * 0.04;
       // 50% of original: was 0.13 → now 0.065
       g.gain.setValueAtTime(0, st);
-      g.gain.linearRampToValueAtTime(0.065 + b * 0.0025, st + 0.2);
-      g.gain.setValueAtTime(0.065, st + 1.8);
+      g.gain.linearRampToValueAtTime(0.022 + b * 0.0008, st + 0.2);
+      g.gain.setValueAtTime(0.022, st + 1.8);
       g.gain.exponentialRampToValueAtTime(0.001, st + 2.6);
       src.connect(f); f.connect(g); g.connect(ctx.destination);
       src.start(st); src.stop(st + 2.7);
@@ -2021,7 +2026,7 @@ function playCrowdCelebration(){
       const s2 = ctx.createBufferSource(); s2.buffer = b2;
       const f2 = ctx.createBiquadFilter(); f2.type = 'highpass'; f2.frequency.value = 1000;
       const g2 = ctx.createGain();
-      g2.gain.setValueAtTime(0.27, now + t);
+      g2.gain.setValueAtTime(0.09, now + t);
       g2.gain.exponentialRampToValueAtTime(0.001, now + t + 0.08);
       s2.connect(f2); f2.connect(g2); g2.connect(ctx.destination);
       s2.start(now + t); s2.stop(now + t + 0.1);
@@ -2034,7 +2039,7 @@ function playCrowdCelebration(){
       o.type = 'triangle'; o.frequency.value = freq;
       const t = now + 0.3 + i * 0.13;
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.14, t + 0.06);
+      g.gain.linearRampToValueAtTime(0.05, t + 0.06);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
       o.connect(g); g.connect(ctx.destination);
       o.start(t); o.stop(t + 0.55);
@@ -2045,8 +2050,8 @@ function playCrowdCelebration(){
       const o = ctx.createOscillator(); const g = ctx.createGain();
       o.type = 'sine'; o.frequency.value = freq; o.detune.value = i * 3;
       g.gain.setValueAtTime(0, now + 1.5);
-      g.gain.linearRampToValueAtTime(0.07, now + 1.8);
-      g.gain.setValueAtTime(0.07, now + 3.0);
+      g.gain.linearRampToValueAtTime(0.025, now + 1.8);
+      g.gain.setValueAtTime(0.025, now + 3.0);
       g.gain.exponentialRampToValueAtTime(0.001, now + 4.0);
       o.connect(g); g.connect(ctx.destination);
       o.start(now + 1.5); o.stop(now + 4.1);
