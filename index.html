@@ -1777,8 +1777,6 @@ function toggleSound(){
 }
 
 // ===================== TIMER =====================
-const AUTO_PASS_LIMIT = 5; // auto-pass on timeout up to this many times; after that host must act manually
-
 function startTimer(sec){
   stopTimer();
   timerSec=sec; timerMax=sec; renderTimerUI();
@@ -1789,19 +1787,7 @@ function startTimer(sec){
     if(timerSec<=0){
       stopTimer(); // stops interval + clock ticking
       playBuzzer();
-      if(!revealed&&!passing){
-        const passCnt = curQ!==null ? qSt[curQ].passCnt : 0;
-        if(passCnt < AUTO_PASS_LIMIT){
-          // Still within auto-pass limit — pass automatically after buzz
-          passing=true;
-          setTimeout(()=>{ passQuestion(); }, 1500);
-        } else {
-          // Auto-pass limit reached — host must manually click Pass or Wrong
-          passing=false;
-          const lbl = document.getElementById('timerLbl');
-          lbl.textContent = 'Host: click Pass or Wrong';
-        }
-      }
+      // Timer expired — host must manually click Pass or Wrong
     }
   },1000);
 }
